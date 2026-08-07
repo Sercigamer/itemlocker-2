@@ -13,7 +13,7 @@ Du sperrst einzelne **Hotbar-Slots** oder ganze **Item-Typen**. Ein gesperrtes I
 - 🖥️ **Config-Menü** – alles per Maus einstellbar, inkl. durchsuchbarer Item-Liste (mit [Mod Menu](https://modrinth.com/mod/modmenu) oder ohne)
 - 🔁 **Mehrfach-Drop** – gesperrte Items fallen erst nach *N* Versuchen (Standard: 5)
 - 📦 **Auch im Inventar** – `Q` auf einem Slot und das Rauswerfen des Stacks am Cursor sind ebenfalls geschützt
-- 🧊 **Einfrieren (optional)** – gesperrte Hotbar-Slots lassen sich im Inventar gar nicht mehr verschieben
+- 🧊 **Slot-Inhalt bleibt drin** – der Inhalt eines gesperrten Slots lässt sich im Inventar nicht herausziehen (abschaltbar)
 - 👀 **HUD-Anzeige** – kleines Schloss auf gesperrten Slots plus Fortschrittsbalken beim Droppen
 - ⌨️ **Tasten & Commands** – alles ohne Datei-Editieren einstellbar
 - 🌍 Deutsch und Englisch
@@ -111,7 +111,7 @@ Wird automatisch angelegt unter `config/itemlocker.json`:
   "requiredDrops": 5,
   "resetAfterMillis": 3000,
   "guardInventoryScreens": true,
-  "preventTakingFromLockedSlots": false,
+  "preventTakingFromLockedSlots": true,
   "showHudIcons": true,
   "playSound": true,
   "actionBarMessages": true,
@@ -123,6 +123,22 @@ Wird automatisch angelegt unter `config/itemlocker.json`:
 `lockedSlots` sind **0-basiert** (0 = Slot 1 auf der Tastatur, 8 = Slot 9). In Spiel und Commands wird 1–9 verwendet.
 
 `resetAfterMillis` ist das Zeitfenster: Wer 3 Sekunden lang nicht droppt, fängt beim nächsten Versuch wieder bei 1 an. So zählt ein Fehldruck von vorhin nicht später mit.
+
+`preventTakingFromLockedSlots` hält den Inhalt eines gesperrten Slots im Inventar fest. Das ist wichtig, weil ein Item, das erst mit der Maus aus dem Slot genommen wird, anschließend **nicht mehr im gesperrten Slot liegt** – die Slot-Sperre könnte dann nicht mehr greifen, und ein Klick neben das Fenster würde es wegwerfen. Wer seine Hotbar frei umsortieren will, schaltet die Option ab; dann schützt die Slot-Sperre nur noch gegen `Q`.
+
+---
+
+## Was genau geschützt ist
+
+| Weg, ein Item loszuwerden | Gesperrter Slot | Gesperrter Item-Typ |
+| --- | --- | --- |
+| `Q` aus der Hand | 5× nötig | 5× nötig |
+| `Strg+Q` (ganzer Stapel) | 5× nötig | 5× nötig |
+| `Q` im offenen Inventar | 5× nötig | 5× nötig |
+| Mit der Maus aufnehmen und neben das Fenster klicken | Aufnehmen wird blockiert | 5× nötig |
+| Shift-Klick / Zahlentaste aus dem Slot heraus | blockiert | – (kein Drop) |
+
+Die letzte Zeile ist kein Wegwerfen, sondern Umsortieren – deshalb greift dort nur die Slot-Sperre.
 
 ---
 

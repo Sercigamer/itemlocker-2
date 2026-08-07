@@ -56,8 +56,25 @@ public final class ConfigManager {
 			}
 		}
 
+		migrate();
 		config.sanitize();
 		save();
+	}
+
+	/**
+	 * Zieht aeltere Config-Dateien nach.
+	 *
+	 * <p>Version 1: Gesperrte Slots werden im Inventar festgehalten. Vorher
+	 * konnte man den Inhalt aus dem Slot nehmen und ausserhalb des Fensters
+	 * fallen lassen - die Slot-Sperre griff dann nicht mehr.
+	 */
+	private static void migrate() {
+		if (config.configVersion < 1) {
+			config.preventTakingFromLockedSlots = true;
+			ItemLocker.LOGGER.info("Config auf Version 1 gehoben: gesperrte Slots werden jetzt festgehalten");
+		}
+
+		config.configVersion = LockerConfig.CURRENT_VERSION;
 	}
 
 	public static void save() {

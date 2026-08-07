@@ -38,7 +38,7 @@
 
 	"itemlocker.message.blocked": "%s is locked - drop %sx more (of %s)",
 	"itemlocker.message.released": "%s dropped",
-	"itemlocker.message.frozen": "Slot %s is frozen",
+	"itemlocker.message.frozen": "Slot %s is locked - contents stay put",
 	"itemlocker.message.slot_locked": "Hotbar slot %s locked",
 	"itemlocker.message.slot_unlocked": "Hotbar slot %s unlocked",
 	"itemlocker.message.item_locked": "%s locked (%s)",

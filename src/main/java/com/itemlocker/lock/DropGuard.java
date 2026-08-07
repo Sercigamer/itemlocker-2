@@ -50,7 +50,7 @@ public final class DropGuard {
 	 *
 	 * @return {@code true}, wenn der Klick verworfen werden soll.
 	 */
-	public static boolean blockSlotClick(int slotId, SlotActionType actionType, PlayerEntity player) {
+	public static boolean blockSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player) {
 		LockerConfig config = ConfigManager.get();
 
 		if (!config.enabled || !config.guardInventoryScreens || player == null) {
@@ -67,6 +67,17 @@ public final class DropGuard {
 		if (slotId == ScreenHandler.EMPTY_SPACE_SLOT_INDEX
 				&& (actionType == SlotActionType.PICKUP || actionType == SlotActionType.THROW)) {
 			return blockDrop(CONTEXT_CURSOR, -1, handler.getCursorStack());
+		}
+
+		// Zahlentaste: der gesperrte Hotbar-Slot steckt in button, nicht in
+		// slotId - der zeigt auf den Slot unter dem Mauszeiger.
+		// Einen leeren gesperrten Slot darf man befuellen, nur leeren nicht.
+		if (actionType == SlotActionType.SWAP
+				&& config.preventTakingFromLockedSlots
+				&& LockManager.isSlotLocked(button)
+				&& !player.getInventory().getStack(button).isEmpty()) {
+			Feedback.slotFrozen(button);
+			return true;
 		}
 
 		if (slotId < 0 || slotId >= handler.slots.size()) {
@@ -87,7 +98,9 @@ public final class DropGuard {
 			return blockDrop(CONTEXT_SCREEN, hotbarSlot, stack);
 		}
 
-		// Optional: gesperrte Hotbar-Slots komplett einfrieren.
+		// Inhalt eines gesperrten Slots festhalten. Ohne das koennte man ihn
+		// aufnehmen und dann ausserhalb des Fensters fallen lassen - dort ist
+		// er nicht mehr im gesperrten Slot und waere ungeschuetzt.
 		if (config.preventTakingFromLockedSlots
 				&& LockManager.isSlotLocked(hotbarSlot)
 				&& isTakeAction(actionType)) {
@@ -137,12 +150,26 @@ public final class DropGuard {
 	}
 
 	private static int hotbarIndexOf(Slot slot, PlayerEntity player) {
-		if (slot.inventory != player.getInventory()) {
-			return -1;
+		PlayerInventory inventory = player.getInventory();
+
+		// Normalfall: der Slot zeigt direkt auf das Spieler-Inventar.
+		if (slot.inventory == inventory && LockManager.isValidHotbarSlot(slot.getIndex())) {
+			return slot.getIndex();
 		}
 
-		int index = slot.getIndex();
-		return LockManager.isValidHotbarSlot(index) ? index : -1;
+		// Manche Screens (z.B. das Kreativ-Inventar) schieben eigene Slot-Typen
+		// dazwischen. Dann hilft die Objektidentitaet des Stacks weiter.
+		ItemStack stack = slot.getStack();
+
+		if (!stack.isEmpty()) {
+			for (int index = 0; index < LockManager.HOTBAR_SIZE; index++) {
+				if (inventory.getStack(index) == stack) {
+					return index;
+				}
+			}
+		}
+
+		return -1;
 	}
 
 	private static boolean isTakeAction(SlotActionType actionType) {

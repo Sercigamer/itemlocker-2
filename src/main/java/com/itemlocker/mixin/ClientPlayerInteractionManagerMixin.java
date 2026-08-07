@@ -20,7 +20,7 @@ public abstract class ClientPlayerInteractionManagerMixin {
 	@Inject(method = "clickSlot", at = @At("HEAD"), cancellable = true)
 	private void itemlocker$guardSlotClick(int syncId, int slotId, int button, SlotActionType actionType,
 			PlayerEntity player, CallbackInfo ci) {
-		if (DropGuard.blockSlotClick(slotId, actionType, player)) {
+		if (DropGuard.blockSlotClick(slotId, button, actionType, player)) {
 			ci.cancel();
 		}
 	}

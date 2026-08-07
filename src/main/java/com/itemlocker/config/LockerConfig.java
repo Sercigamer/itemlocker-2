@@ -7,6 +7,12 @@ import java.util.Set;
  * Alles, was in {@code config/itemlocker.json} landet.
  */
 public class LockerConfig {
+	/** Aktueller Stand des Config-Formats, siehe ConfigManager#migrate. */
+	public static final int CURRENT_VERSION = 1;
+
+	/** Steht in alten Dateien nicht drin und ist dort deshalb 0. */
+	public int configVersion;
+
 	/** Master-Schalter. Wenn {@code false}, verhaelt sich alles wie Vanilla. */
 	public boolean enabled = true;
 
@@ -19,8 +25,14 @@ public class LockerConfig {
 	/** Auch in Inventar-/Kisten-GUIs schuetzen (Q auf einem Slot, Item rauswerfen). */
 	public boolean guardInventoryScreens = true;
 
-	/** Gesperrte Hotbar-Slots im Inventar komplett einfrieren (kein Verschieben). */
-	public boolean preventTakingFromLockedSlots = false;
+	/**
+	 * Haelt den Inhalt eines gesperrten Hotbar-Slots im Inventar fest.
+	 *
+	 * <p>Ohne das kann man das Item mit der Maus aufnehmen und ausserhalb des
+	 * Fensters fallen lassen - dabei ist es nicht mehr im gesperrten Slot, die
+	 * Slot-Sperre greift also nicht mehr. Deshalb standardmaessig an.
+	 */
+	public boolean preventTakingFromLockedSlots = true;
 
 	/** Schloss-Symbole ueber der Hotbar zeichnen. */
 	public boolean showHudIcons = true;
