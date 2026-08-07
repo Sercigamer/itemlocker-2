@@ -24,6 +24,7 @@ public final class DropGuard {
 	private static final String CONTEXT_HOTBAR = "hotbar";
 	private static final String CONTEXT_SCREEN = "screen";
 	private static final String CONTEXT_CURSOR = "cursor";
+	private static final String CONTEXT_CREATIVE = "creative";
 
 	private DropGuard() {
 	}
@@ -109,6 +110,26 @@ public final class DropGuard {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Droppen aus dem Kreativ-Inventar.
+	 *
+	 * <p>Das Kreativ-Inventar geht nicht ueber {@code clickSlot}, sondern ruft
+	 * {@code dropCreativeStack} auf. Ohne diesen Weg fiel ein gesperrtes Item im
+	 * Kreativmodus beim ersten Versuch.
+	 *
+	 * <p>Welcher Slot dahintersteckt, ist hier nicht mehr bekannt - deshalb kann
+	 * nur die Item-Sperre greifen, nicht die Slot-Sperre.
+	 */
+	public static boolean blockCreativeDrop(ItemStack stack) {
+		LockerConfig config = ConfigManager.get();
+
+		if (!config.enabled || !config.guardInventoryScreens) {
+			return false;
+		}
+
+		return blockDrop(CONTEXT_CREATIVE, -1, stack);
 	}
 
 	/**

@@ -29,6 +29,7 @@ public final class MixinSelfTest {
 
 		check("net.minecraft.class_746", "itemlocker$guardHotbarDrop");
 		check("net.minecraft.class_636", "itemlocker$guardSlotClick");
+		check("net.minecraft.class_636", "itemlocker$guardCreativeDrop");
 	}
 
 	private static void check(String intermediaryName, String injectedMethod) {
@@ -41,8 +42,10 @@ public final class MixinSelfTest {
 			Class<?> target = Class.forName(runtimeName, false, MixinSelfTest.class.getClassLoader());
 
 			for (Method method : target.getDeclaredMethods()) {
-				// Mixin kann Handler-Methoden umbenennen, daher reicht der Namensteil.
-				if (method.getName().contains(injectedMethod) || method.getName().contains("itemlocker")) {
+				// Mixin haengt ein Praefix davor (handler$abc000$...), der eigene
+				// Name bleibt aber erhalten - deshalb wird auf ihn geprueft und
+				// nicht bloss auf "irgendwas von uns".
+				if (method.getName().contains(injectedMethod)) {
 					ItemLocker.LOGGER.info("Selbsttest OK: {} enthaelt {}", runtimeName, method.getName());
 					return;
 				}
@@ -51,7 +54,7 @@ public final class MixinSelfTest {
 			StringBuilder synthetic = new StringBuilder();
 
 			for (Method method : target.getDeclaredMethods()) {
-				if (method.getName().indexOf('$') >= 0) {
+				if (method.getName().contains("itemlocker")) {
 					synthetic.append(method.getName()).append(' ');
 				}
 			}

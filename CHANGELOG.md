@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an ItemLocker.
 
+## [1.2.1]
+
+### Behoben
+
+- Im **Kreativmodus** fielen gesperrte Items beim ersten Versuch, sobald das Inventar offen war. Das Kreativ-Inventar dropt nicht über `clickSlot`, sondern über `ClientPlayerInteractionManager.dropCreativeStack` — dieser Weg war ungeschützt. Im Survival war der Schutz nie betroffen.
+
 ## [1.2.0]
 
 ### Behoben

@@ -9,6 +9,7 @@ import com.itemlocker.lock.DropGuard;
 
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
 
 /**
@@ -21,6 +22,17 @@ public abstract class ClientPlayerInteractionManagerMixin {
 	private void itemlocker$guardSlotClick(int syncId, int slotId, int button, SlotActionType actionType,
 			PlayerEntity player, CallbackInfo ci) {
 		if (DropGuard.blockSlotClick(slotId, button, actionType, player)) {
+			ci.cancel();
+		}
+	}
+
+	/**
+	 * Das Kreativ-Inventar dropped nicht ueber {@code clickSlot}, sondern hier.
+	 * Ohne diesen Haken fiel ein gesperrtes Item im Kreativmodus sofort.
+	 */
+	@Inject(method = "dropCreativeStack", at = @At("HEAD"), cancellable = true)
+	private void itemlocker$guardCreativeDrop(ItemStack stack, CallbackInfo ci) {
+		if (DropGuard.blockCreativeDrop(stack)) {
 			ci.cancel();
 		}
 	}

@@ -140,6 +140,8 @@ Wird automatisch angelegt unter `config/itemlocker.json`:
 
 Die letzte Zeile ist kein Wegwerfen, sondern Umsortieren – deshalb greift dort nur die Slot-Sperre.
 
+Das gilt in **Survival und Kreativ** gleichermaßen. Das Kreativ-Inventar nimmt intern einen eigenen Weg zum Droppen, der ebenfalls abgesichert ist. Einzige bekannte Ausnahme: Ein Item im Kreativmodus zum Löschen zurück in die Item-Liste zu ziehen, ist kein Drop und wird nicht mitgezählt.
+
 ---
 
 ## Selbst bauen
