@@ -24,6 +24,18 @@ nbproject/
 # Claude Code (lokale Einstellungen)
 .claude/settings.local.json
 
+# Nie versehentlich Zugangsdaten committen
+.env
+.env.*
+*.pem
+*.key
+*.jks
+*.keystore
+*.p12
+secrets.*
+credentials.*
+gradle-local.properties
+
 # OS
 .DS_Store
 Thumbs.db

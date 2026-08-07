@@ -1,0 +1,35 @@
+# Changelog
+
+Alle nennenswerten Änderungen an ItemLocker.
+
+## [1.2.0]
+
+### Behoben
+
+- Ein gesperrter Hotbar-Slot ließ sich im Inventar umgehen: Item mit der Maus aufnehmen, neben das Fenster klicken, weg war es. Sobald das Item den Slot verlässt, konnte die Slot-Sperre nicht mehr greifen.
+- Die Zahlentasten-Aktion (`SlotActionType.SWAP`) wurde nicht geprüft — dabei steckt der betroffene Hotbar-Slot im `button`-Parameter, nicht in `slotId`.
+
+### Geändert
+
+- `preventTakingFromLockedSlots` ist jetzt Standard: der Inhalt eines gesperrten Slots bleibt im Inventar an Ort und Stelle. Abschaltbar im Config-Menü.
+- Bestehende Konfigurationsdateien werden beim Start automatisch auf Version 1 gehoben.
+
+## [1.1.0]
+
+### Neu
+
+- Config-Menü mit allen Optionen als Schalter und Schieberegler
+- Item-Auswahl: durchsuchbare Liste aller Items, Klick sperrt oder entsperrt; Filter für alle Items, nur gesperrte oder nur die aus dem Inventar
+- Slot-Auswahl: die neun Hotbar-Slots als anklickbare Reihe
+- Anbindung an [Mod Menu](https://modrinth.com/mod/modmenu) (optional)
+- Erreichbar zusätzlich über `/itemlocker config` und eine eigene Taste
+
+## [1.0.0]
+
+### Neu
+
+- Hotbar-Slots und Item-Typen sperren; gesperrte Sachen fallen erst nach mehreren Drop-Versuchen (Standard 5)
+- Schutz auch in Inventar-Bildschirmen
+- Schloss-Symbole über der Hotbar samt Fortschrittsbalken
+- Befehle `/itemlocker` und `/il`, Tasten für Slot- und Item-Sperre
+- Konfiguration unter `config/itemlocker.json`

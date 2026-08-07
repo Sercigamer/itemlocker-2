@@ -177,33 +177,62 @@ Häufigste Ursache auf Lunar Client: **Fabric API fehlt** im `mods`-Ordner.
 
 ---
 
-## GitHub
+## Auf GitHub veröffentlichen
 
-Das Repo ist bereits vorbereitet:
+### 1. Deinen GitHub-Namen eintragen
 
-- `.github/workflows/build.yml` – baut bei jedem Push und hängt das Jar als Artifact an
-- `.github/workflows/release.yml` – erstellt bei einem Tag `v*` automatisch ein Release mit Jar
-- `.gitignore`, `.gitattributes`, `LICENSE` (MIT)
+Eine einzige Stelle — in [`gradle.properties`](gradle.properties):
 
-Repo verbinden:
-
-```bash
-git remote add origin https://github.com/DEIN-NAME/itemlocker.git
+```properties
+github_user=YOUR-GITHUB-NAME
 ```
 
-Danach pushen:
+Daraus baut Gradle automatisch den Autor-Eintrag und die Repo-Links in `fabric.mod.json`. Solange dort noch der Platzhalter steht, bricht der Release-Workflow bewusst ab.
+
+### 2. Commit-Identität setzen
+
+Damit deine private E-Mail nicht in der Historie landet, nutze deine GitHub-noreply-Adresse. Die exakte Adresse steht unter **GitHub → Settings → Emails** („Keep my email addresses private"), Form: `12345678+name@users.noreply.github.com`.
+
+```bash
+git config user.name "YOUR-GITHUB-NAME" && git config user.email "12345678+YOUR-GITHUB-NAME@users.noreply.github.com"
+```
+
+Die bereits vorhandenen Commits auf diese Identität umschreiben (nur sinnvoll, solange nichts gepusht ist):
+
+```bash
+git rebase --root --exec "git commit --amend --no-edit --reset-author"
+```
+
+### 3. Pushen
+
+```bash
+git remote add origin https://github.com/YOUR-GITHUB-NAME/itemlocker.git
+```
 
 ```bash
 git push -u origin main
 ```
 
-Release veröffentlichen:
+### 4. Release veröffentlichen
+
+Tag setzen — die Version muss zu `mod_version` in `gradle.properties` passen, sonst bricht der Workflow ab:
 
 ```bash
-git tag v1.0.0 && git push origin v1.0.0
+git tag v1.2.0 && git push origin v1.2.0
 ```
 
-Denk daran, in [`fabric.mod.json`](src/main/resources/fabric.mod.json) die Platzhalter-URLs (`USERNAME`) durch deinen GitHub-Namen zu ersetzen.
+Der Workflow baut die Mod und hängt **nur das Mod-Jar** ans Release (das `-sources`-Jar wird aussortiert, damit es niemand versehentlich in den `mods`-Ordner legt).
+
+### Was schon eingerichtet ist
+
+- `.github/workflows/build.yml` – baut bei jedem Push und hängt das Jar als Artifact an
+- `.github/workflows/release.yml` – Release bei Tag `v*`, mit Platzhalter- und Versionsprüfung
+- `.gitignore` – blockt `build/`, `run/`, IDE-Dateien, lokale Claude-Einstellungen und gängige Zugangsdaten-Dateien
+- `LICENSE` (MIT), `CHANGELOG.md`, `.gitattributes`
+
+### Was nichts Persönliches enthält
+
+Quellcode, Konfiguration und Screenshots sind frei von Pfaden, Namen und Zugangsdaten. Der Autorname kommt ausschließlich aus `github_user`. In der `LICENSE` steht „ItemLocker Contributors" — trag dort deinen Namen ein, falls du das Copyright auf dich schreiben willst.
 
 ---
 

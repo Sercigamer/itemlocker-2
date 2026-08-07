@@ -40,11 +40,20 @@ dependencies {
 }
 
 processResources {
-	inputs.property "version", project.version
+	inputs.property 'version', project.version
+	inputs.property 'github_user', project.github_user
 
-	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
+	filesMatching('fabric.mod.json') {
+		expand 'version': inputs.properties.version,
+				'github_user': inputs.properties.github_user
 	}
+}
+
+// Gleiche Eingabe soll das gleiche Jar ergeben - erleichtert das Vergleichen
+// von Builds und vermeidet unnoetige Unterschiede zwischen Rechner und CI.
+tasks.withType(AbstractArchiveTask).configureEach {
+	it.preserveFileTimestamps = false
+	it.reproducibleFileOrder = true
 }
 
 tasks.withType(JavaCompile).configureEach {
