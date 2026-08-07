@@ -12,6 +12,10 @@ base {
 
 repositories {
 	// Loom fuegt die Minecraft-/Fabric-Repositories selbst hinzu.
+	maven {
+		name = 'TerraformersMC'
+		url = uri('https://maven.terraformersmc.com/releases/')
+	}
 }
 
 loom {
@@ -28,6 +32,11 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	// Mod Menu ist optional: nur zum Kompilieren und im Dev-Client vorhanden,
+	// wird nicht mitgeliefert und nicht vorausgesetzt.
+	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+	modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {

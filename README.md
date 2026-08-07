@@ -10,6 +10,7 @@ Du sperrst einzelne **Hotbar-Slots** oder ganze **Item-Typen**. Ein gesperrtes I
 
 - 🔒 **Hotbar-Slots sperren** – Slot 1–9 einzeln, egal was drin liegt
 - 🗡️ **Item-Typen sperren** – z. B. `minecraft:elytra` ist überall geschützt
+- 🖥️ **Config-Menü** – alles per Maus einstellbar, inkl. durchsuchbarer Item-Liste (mit [Mod Menu](https://modrinth.com/mod/modmenu) oder ohne)
 - 🔁 **Mehrfach-Drop** – gesperrte Items fallen erst nach *N* Versuchen (Standard: 5)
 - 📦 **Auch im Inventar** – `Q` auf einem Slot und das Rauswerfen des Stacks am Cursor sind ebenfalls geschützt
 - 🧊 **Einfrieren (optional)** – gesperrte Hotbar-Slots lassen sich im Inventar gar nicht mehr verschieben
@@ -27,7 +28,8 @@ Die Mod ist **rein clientseitig**. Der Server bekommt einen geblockten Drop nie 
 
 1. [Fabric Loader](https://fabricmc.net/use/installer/) für **1.21.11** installieren
 2. [Fabric API](https://modrinth.com/mod/fabric-api) (Version für 1.21.11) in den `mods`-Ordner legen
-3. `itemlocker-1.0.0.jar` daneben legen
+3. `itemlocker-1.1.0.jar` daneben legen
+4. Optional: [Mod Menu](https://modrinth.com/mod/modmenu) für den Zahnrad-Knopf im Mod-Menü
 4. Minecraft mit dem Fabric-Profil starten
 
 ### Lunar Client
@@ -46,6 +48,27 @@ Dort **beide** Jars ablegen — `itemlocker-*.jar` **und** `fabric-api-*.jar` f�
 ---
 
 ## Bedienung
+
+### Config-Menü
+
+Drei Wege dorthin:
+
+1. **Mod Menu** – im Mod-Menü auf ItemLocker → Zahnrad
+2. **Command** – `/itemlocker config`
+3. **Taste** – „ItemLocker-Menü öffnen" in den Steuerungs-Einstellungen belegen
+
+Mod Menu ist **optional**: ohne funktionieren Command und Taste trotzdem.
+
+![Config-Menü](docs/config-screen.png)
+
+Im Hauptmenü stellst du alle Optionen per Maus ein (Mod an/aus, nötige Drops als Schieberegler, Sound, Meldungen, HUD …). Dazu zwei Unterseiten:
+
+- **Hotbar-Slots …** – die neun Slots als anklickbare Reihe, inklusive Vorschau, was gerade drinliegt
+- **Items … (N)** – durchsuchbare Liste aller Items. Tippe z. B. `elytra`, klicke die Zeile an, fertig. Über den Filter oben rechts wechselst du zwischen **Alle Items**, **Nur gesperrte** und **Aus Inventar** (zeigt nur, was du gerade dabei hast).
+
+![Item-Auswahl](docs/item-screen.png)
+
+![Hotbar-Slots](docs/slot-screen.png)
 
 ### Tasten (in den Steuerungs-Einstellungen unter „Inventar" änderbar)
 
@@ -111,7 +134,7 @@ Benötigt **JDK 21** (Gradle lädt es bei Bedarf automatisch herunter).
 ./gradlew build
 ```
 
-Das fertige Jar liegt danach unter `build/libs/itemlocker-1.0.0.jar` (die Datei mit `-sources` im Namen wird nicht gebraucht).
+Das fertige Jar liegt danach unter `build/libs/itemlocker-1.1.0.jar` (die Datei mit `-sources` im Namen wird nicht gebraucht).
 
 Zum Testen mit einem Entwicklungs-Client:
 

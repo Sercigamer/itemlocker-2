@@ -36,6 +36,7 @@ public final class ItemLockerCommands {
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			dispatcher.register(literal("itemlocker")
 					.executes(ItemLockerCommands::status)
+					.then(literal("config").executes(ItemLockerCommands::openConfig))
 					.then(literal("help").executes(ItemLockerCommands::help))
 					.then(literal("status").executes(ItemLockerCommands::status))
 					.then(literal("list").executes(ItemLockerCommands::list))
@@ -94,11 +95,18 @@ public final class ItemLockerCommands {
 		});
 	}
 
+	private static int openConfig(CommandContext<FabricClientCommandSource> ctx) {
+		// Nicht sofort oeffnen - der Chat-Screen wird gerade erst geschlossen.
+		ItemLockerKeybinds.requestConfigScreen();
+		return 1;
+	}
+
 	private static int help(CommandContext<FabricClientCommandSource> ctx) {
 		FabricClientCommandSource source = ctx.getSource();
 		source.sendFeedback(header());
 
 		for (String line : new String[] {
+				"itemlocker.help.config",
 				"itemlocker.help.slot",
 				"itemlocker.help.item",
 				"itemlocker.help.item_id",

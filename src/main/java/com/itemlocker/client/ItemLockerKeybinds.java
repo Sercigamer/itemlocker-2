@@ -2,6 +2,7 @@ package com.itemlocker.client;
 
 import org.lwjgl.glfw.GLFW;
 
+import com.itemlocker.client.screen.ItemLockerConfigScreen;
 import com.itemlocker.config.ConfigManager;
 import com.itemlocker.config.LockerConfig;
 import com.itemlocker.lock.DropGuard;
@@ -25,8 +26,20 @@ public final class ItemLockerKeybinds {
 	public static KeyBinding toggleSlot;
 	public static KeyBinding toggleItem;
 	public static KeyBinding toggleMod;
+	public static KeyBinding openConfig;
+
+	/**
+	 * Ein Screen darf nicht mitten aus einem Command heraus geoeffnet werden -
+	 * der schliessende Chat wuerde ihn sofort wieder wegraeumen. Also merken und
+	 * im naechsten Tick oeffnen, wenn kein anderer Screen offen ist.
+	 */
+	private static boolean configScreenRequested;
 
 	private ItemLockerKeybinds() {
+	}
+
+	public static void requestConfigScreen() {
+		configScreenRequested = true;
 	}
 
 	public static void register() {
@@ -39,10 +52,22 @@ public final class ItemLockerKeybinds {
 		toggleMod = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 				"key.itemlocker.toggle_mod", GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.INVENTORY));
 
+		openConfig = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+				"key.itemlocker.open_config", GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.INVENTORY));
+
 		ClientTickEvents.END_CLIENT_TICK.register(ItemLockerKeybinds::onTick);
 	}
 
 	private static void onTick(MinecraftClient client) {
+		while (openConfig.wasPressed()) {
+			requestConfigScreen();
+		}
+
+		if (configScreenRequested && client.currentScreen == null) {
+			configScreenRequested = false;
+			client.setScreen(new ItemLockerConfigScreen(null));
+		}
+
 		ClientPlayerEntity player = client.player;
 
 		if (player == null) {

@@ -18,6 +18,9 @@
 	"entrypoints": {
 		"client": [
 			"com.itemlocker.client.ItemLockerClient"
+		],
+		"modmenu": [
+			"com.itemlocker.compat.ModMenuIntegration"
 		]
 	},
 	"mixins": [
@@ -31,5 +34,8 @@
 		"minecraft": "~1.21.11",
 		"java": ">=21",
 		"fabric-api": "*"
+	},
+	"suggests": {
+		"modmenu": "*"
 	}
 }
