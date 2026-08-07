@@ -1,0 +1,35 @@
+{
+	"schemaVersion": 1,
+	"id": "itemlocker",
+	"version": "${version}",
+	"name": "ItemLocker",
+	"description": "Sperrt Hotbar-Slots und Item-Typen: gesperrte Items fallen erst, wenn man die Drop-Taste mehrfach hintereinander drueckt.",
+	"authors": [
+		"Sercan"
+	],
+	"contact": {
+		"homepage": "https://github.com/USERNAME/itemlocker",
+		"sources": "https://github.com/USERNAME/itemlocker",
+		"issues": "https://github.com/USERNAME/itemlocker/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/itemlocker/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.itemlocker.client.ItemLockerClient"
+		]
+	},
+	"mixins": [
+		{
+			"config": "itemlocker.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
