@@ -7,6 +7,7 @@
 Eine clientseitige Fabric-Mod, die deine wichtigsten Items festhält:
 gesperrte Sachen fallen erst, wenn du die Drop-Taste **mehrfach hintereinander** drückst.
 
+[![Build](https://github.com/Sercigamer/itemlocker-2/actions/workflows/build.yml/badge.svg)](https://github.com/Sercigamer/itemlocker-2/actions/workflows/build.yml)
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.21.11-brightgreen)
 ![Loader](https://img.shields.io/badge/Loader-Fabric-dbd0b4)
 ![Seite](https://img.shields.io/badge/Seite-nur%20Client-blue)

@@ -8,9 +8,9 @@
 		"${github_user}"
 	],
 	"contact": {
-		"homepage": "https://github.com/${github_user}/itemlocker",
-		"sources": "https://github.com/${github_user}/itemlocker",
-		"issues": "https://github.com/${github_user}/itemlocker/issues"
+		"homepage": "https://github.com/${github_user}/${github_repo}",
+		"sources": "https://github.com/${github_user}/${github_repo}",
+		"issues": "https://github.com/${github_user}/${github_repo}/issues"
 	},
 	"license": "MIT",
 	"icon": "assets/itemlocker/icon.png",

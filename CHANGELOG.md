@@ -13,6 +13,10 @@ Alle nennenswerten Änderungen an ItemLocker.
 
 - Der eingebaute Mixin-Selbsttest prüft den Methodennamen jetzt als Endung statt als Teilstring. Vorher konnte eine Prüfung fälschlich durch einen längeren Namen erfüllt werden.
 
+### Behoben
+
+- Die Repo-Links in der Mod-Info (`fabric.mod.json`) zeigten auf ein Repository mit falschem Namen. Benutzer und Repo-Name kommen jetzt beide aus `gradle.properties`.
+
 ## [1.2.1]
 
 ### Behoben

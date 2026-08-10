@@ -42,10 +42,12 @@ dependencies {
 processResources {
 	inputs.property 'version', project.version
 	inputs.property 'github_user', project.github_user
+	inputs.property 'github_repo', project.github_repo
 
 	filesMatching('fabric.mod.json') {
 		expand 'version': inputs.properties.version,
-				'github_user': inputs.properties.github_user
+				'github_user': inputs.properties.github_user,
+				'github_repo': inputs.properties.github_repo
 	}
 }
 
