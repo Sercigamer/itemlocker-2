@@ -183,14 +183,33 @@ Die neun Plätze als anklickbare Reihe, samt Vorschau, was gerade drinliegt. Kli
 
 ## Tasten
 
-Alle in den Steuerungs-Einstellungen unter **Inventar** änderbar.
+ItemLocker bringt vier Tastenbelegungen mit. Du findest sie unter
+**Optionen → Steuerung → Tastenbelegung**, in der Kategorie **Inventar**.
 
-| Taste | Funktion |
-| --- | --- |
-| `L` | Aktuellen Hotbar-Slot sperren / entsperren |
-| `K` | Item-Typ in der Hand sperren / entsperren |
-| *(frei)* | ItemLocker komplett an/aus |
-| *(frei)* | Config-Menü öffnen |
+| Standard | Name in den Einstellungen | Was passiert |
+| --- | --- | --- |
+| `L` | Hotbar-Slot sperren/entsperren | Sperrt den Platz, auf dem du gerade stehst — also den aktiven Hotbar-Slot. Nochmal drücken gibt ihn wieder frei. |
+| `K` | Item in der Hand sperren/entsperren | Sperrt den **Typ** des Items in deiner Hand, z. B. jede Elytra. Nochmal drücken hebt es auf. |
+| *nicht belegt* | ItemLocker an/aus | Schaltet die ganze Mod um. Praktisch, wenn du kurz aufräumen willst, ohne alle Sperren zu löschen. |
+| *nicht belegt* | ItemLocker-Menü öffnen | Öffnet das Config-Menü direkt, ohne Umweg über Chat oder Mod Menu. |
+
+### Die zwei freien Tasten belegen
+
+Die letzten beiden sind absichtlich **unbelegt**, damit ItemLocker dir keine Taste wegnimmt, die du schon benutzt. So belegst du sie:
+
+1. `Esc` → **Optionen** → **Steuerung** → **Tastenbelegung**
+2. Runterscrollen bis **Inventar**
+3. Auf das Feld neben der gewünschten Zeile klicken
+4. Gewünschte Taste drücken — fertig
+
+Falls Minecraft einen Konflikt mit einer anderen Belegung anzeigt (kleines Warndreieck), such dir eine andere Taste; sonst lösen beide gleichzeitig aus.
+
+### Gut zu wissen
+
+- **`L` und `K` lassen sich ändern** wie jede andere Belegung — die Standardwerte sind nur ein Vorschlag.
+- Die Tasten wirken **nur im Spiel**, nicht in offenen Menüs oder im Chat.
+- `K` braucht ein Item in der Hand. Mit leerer Hand kommt der Hinweis *„Du hältst kein Item in der Hand"*.
+- Alles, was die Tasten tun, geht auch per Befehl — siehe unten.
 
 ---
 
@@ -386,41 +405,18 @@ src/main/java/com/itemlocker/
 
 ## Auf GitHub veröffentlichen
 
-### 1. Deinen GitHub-Namen eintragen
+### Bereits eingerichtet
 
-Eine einzige Stelle — in [`gradle.properties`](gradle.properties):
+- `github_user=Sercigamer` in [`gradle.properties`](gradle.properties) — daraus baut Gradle den Autor-Eintrag und die Repo-Links in `fabric.mod.json`
+- Commit-Identität auf die GitHub-noreply-Adresse, damit keine private E-Mail in der Historie landet
 
-```properties
-github_user=YOUR-GITHUB-NAME
-```
-
-Daraus baut Gradle den Autor-Eintrag und die Repo-Links in `fabric.mod.json`. Solange dort der Platzhalter steht, bricht der Release-Workflow bewusst ab.
-
-### 2. Commit-Identität setzen
-
-Damit deine private E-Mail nicht in der Historie landet, nutze deine GitHub-noreply-Adresse. Die genaue Adresse steht unter **GitHub → Settings → Emails**, Form: `12345678+name@users.noreply.github.com`.
-
-```bash
-git config user.name "YOUR-GITHUB-NAME" && git config user.email "12345678+YOUR-GITHUB-NAME@users.noreply.github.com"
-```
-
-Vorhandene Commits umschreiben (nur sinnvoll, solange nichts gepusht ist):
-
-```bash
-git rebase --root --exec "git commit --amend --no-edit --reset-author"
-```
-
-### 3. Pushen
-
-```bash
-git remote add origin https://github.com/YOUR-GITHUB-NAME/itemlocker.git
-```
+### Pushen
 
 ```bash
 git push -u origin main
 ```
 
-### 4. Release veröffentlichen
+### Release veröffentlichen
 
 Trag die Änderungen in [`CHANGELOG.md`](CHANGELOG.md) unter einer Überschrift `## [1.3.0]` ein, setze `mod_version` in `gradle.properties` auf dieselbe Nummer, dann:
 
@@ -441,4 +437,4 @@ Der Workflow prüft, dass Tag und `mod_version` übereinstimmen, baut die Mod, *
 
 ## Lizenz
 
-MIT — siehe [LICENSE](LICENSE). In der Lizenzdatei steht „ItemLocker Contributors"; trag dort deinen Namen ein, wenn das Copyright auf dich laufen soll.
+MIT — siehe [LICENSE](LICENSE).
