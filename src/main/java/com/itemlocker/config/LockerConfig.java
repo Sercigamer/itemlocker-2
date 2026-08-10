@@ -34,6 +34,14 @@ public class LockerConfig {
 	 */
 	public boolean preventTakingFromLockedSlots = true;
 
+	/**
+	 * Verhindert, dass gesperrte Sachen an einen Ruestungsstaender gehen.
+	 *
+	 * <p>Anders als beim Droppen wird hier nicht gezaehlt, sondern hart
+	 * blockiert - ein Rechtsklick genuegt sonst, und das Item ist weg.
+	 */
+	public boolean protectArmorStands = true;
+
 	/** Schloss-Symbole ueber der Hotbar zeichnen. */
 	public boolean showHudIcons = true;
 

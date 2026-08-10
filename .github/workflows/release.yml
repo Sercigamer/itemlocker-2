@@ -1,7 +1,8 @@
 name: Release
 
-# Baut die Mod und haengt das fertige Jar an ein GitHub-Release,
-# sobald ein Tag wie v1.2.0 gepusht wird.
+# Baut die Mod und veroeffentlicht ein GitHub-Release, sobald ein Tag wie
+# v1.3.0 gepusht wird. Der Release-Text kommt aus dem passenden Abschnitt in
+# CHANGELOG.md - so bleiben Changelog und Release automatisch deckungsgleich.
 on:
   push:
     tags:
@@ -26,6 +27,7 @@ jobs:
             echo "::error::github_user in gradle.properties steht noch auf dem Platzhalter."
             exit 1
           fi
+          echo "GITHUB_USER=$USER" >> "$GITHUB_ENV"
 
       - name: Tag gegen mod_version pruefen
         if: startsWith(github.ref, 'refs/tags/v')
@@ -36,6 +38,7 @@ jobs:
             echo "::error::Tag $GITHUB_REF_NAME passt nicht zu mod_version=$VERSION"
             exit 1
           fi
+          echo "MOD_VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -58,8 +61,59 @@ jobs:
           rm -f release/*-sources.jar
           ls -l release
 
+      - name: Release-Text aus CHANGELOG bauen
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          MC=$(grep -E '^minecraft_version=' gradle.properties | cut -d= -f2- | tr -d '[:space:]')
+
+          # Bewusst ohne Regex: die eckigen Klammern der Ueberschrift muessten
+          # sonst doppelt escaped werden, was leicht still danebengeht.
+          awk -v hdr="## [$VERSION]" '
+            index($0, hdr) == 1 { found = 1; next }
+            found && substr($0, 1, 4) == "## [" { exit }
+            found { print }
+          ' CHANGELOG.md > section.md
+
+          if [ ! -s section.md ]; then
+            echo "::error::Kein CHANGELOG-Abschnitt fuer Version $VERSION gefunden."
+            exit 1
+          fi
+
+          JAR=$(basename release/*.jar)
+
+          {
+            echo "> Client-seitige Fabric-Mod fuer Minecraft $MC. Gesperrte Items"
+            echo "> fallen nicht beim ersten Drop-Versuch."
+            echo
+            cat section.md
+            echo
+            echo "## Installation"
+            echo
+            echo "1. [Fabric Loader](https://fabricmc.net/use/installer/) fuer **$MC** installieren"
+            echo "2. [Fabric API](https://modrinth.com/mod/fabric-api) in den \`mods\`-Ordner legen (zwingend)"
+            echo "3. \`$JAR\` daneben legen"
+            echo "4. Optional: [Mod Menu](https://modrinth.com/mod/modmenu) fuer den Zahnrad-Knopf"
+            echo
+            echo "Lunar Client: beide Jars nach \`%USERPROFILE%\\.lunarclient\\mods\\$MC\`."
+            echo
+            echo "## Schnellstart"
+            echo
+            echo "| Aktion | Wie |"
+            echo "| --- | --- |"
+            echo "| Menue oeffnen | \`/itemlocker config\` |"
+            echo "| Hotbar-Slot sperren | Taste \`L\` |"
+            echo "| Item in der Hand sperren | Taste \`K\` |"
+            echo
+            echo "Volle Anleitung im [README](https://github.com/${GITHUB_USER}/itemlocker#readme)."
+          } > release-body.md
+
+          cat release-body.md
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
+          name: ItemLocker ${{ env.MOD_VERSION }}
+          body_path: release-body.md
           files: release/*.jar
-          generate_release_notes: true
+          fail_on_unmatched_files: true

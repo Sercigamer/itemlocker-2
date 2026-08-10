@@ -83,6 +83,12 @@ public final class ItemLockerCommands {
 								return saveAndReport(ctx, "itemlocker.command.inventory",
 										ConfigManager.get().guardInventoryScreens);
 							})))
+					.then(literal("armorstands")
+							.then(argument("value", BoolArgumentType.bool()).executes(ctx -> {
+								ConfigManager.get().protectArmorStands = BoolArgumentType.getBool(ctx, "value");
+								return saveAndReport(ctx, "itemlocker.command.armor_stands",
+										ConfigManager.get().protectArmorStands);
+							})))
 					.then(literal("freeze")
 							.then(argument("value", BoolArgumentType.bool()).executes(ctx -> {
 								ConfigManager.get().preventTakingFromLockedSlots = BoolArgumentType.getBool(ctx, "value");

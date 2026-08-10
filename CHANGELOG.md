@@ -2,6 +2,17 @@
 
 Alle nennenswerten Änderungen an ItemLocker.
 
+## [1.3.0]
+
+### Neu
+
+- **Rüstungsständer-Schutz**: Gesperrte Sachen lassen sich nicht mehr an einen Rüstungsständer anlegen. Hier wird nicht gezählt, sondern hart blockiert — ein einziger Rechtsklick genügt sonst, und das Item hängt am Ständer.
+- Neue Option `protectArmorStands` (Standard: an), umschaltbar im Config-Menü und über `/itemlocker armorstands <true|false>`.
+
+### Geändert
+
+- Der eingebaute Mixin-Selbsttest prüft den Methodennamen jetzt als Endung statt als Teilstring. Vorher konnte eine Prüfung fälschlich durch einen längeren Namen erfüllt werden.
+
 ## [1.2.1]
 
 ### Behoben

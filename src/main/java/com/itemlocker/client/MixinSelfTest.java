@@ -30,6 +30,8 @@ public final class MixinSelfTest {
 		check("net.minecraft.class_746", "itemlocker$guardHotbarDrop");
 		check("net.minecraft.class_636", "itemlocker$guardSlotClick");
 		check("net.minecraft.class_636", "itemlocker$guardCreativeDrop");
+		check("net.minecraft.class_636", "itemlocker$guardEntityUseAtLocation");
+		check("net.minecraft.class_636", "itemlocker$guardEntityUse");
 	}
 
 	private static void check(String intermediaryName, String injectedMethod) {
@@ -42,10 +44,11 @@ public final class MixinSelfTest {
 			Class<?> target = Class.forName(runtimeName, false, MixinSelfTest.class.getClassLoader());
 
 			for (Method method : target.getDeclaredMethods()) {
-				// Mixin haengt ein Praefix davor (handler$abc000$...), der eigene
-				// Name bleibt aber erhalten - deshalb wird auf ihn geprueft und
-				// nicht bloss auf "irgendwas von uns".
-				if (method.getName().contains(injectedMethod)) {
+				// Mixin haengt nur ein Praefix davor (handler$abc000$...), der
+				// eigene Name steht am Ende. Deshalb endsWith statt contains -
+				// sonst wuerde "guardEntityUse" faelschlich auf
+				// "guardEntityUseAtLocation" passen.
+				if (method.getName().endsWith(injectedMethod)) {
 					ItemLocker.LOGGER.info("Selbsttest OK: {} enthaelt {}", runtimeName, method.getName());
 					return;
 				}

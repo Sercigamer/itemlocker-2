@@ -10,6 +10,7 @@
 	"itemlocker.config.timeout": "Zaehler-Reset: %s s",
 	"itemlocker.config.guard_inventory": "Schutz im Inventar",
 	"itemlocker.config.freeze_slots": "Slots einfrieren",
+	"itemlocker.config.armor_stands": "Ruestungsstaender",
 	"itemlocker.config.hud": "Schloss-Symbole",
 	"itemlocker.config.sound": "Sound",
 	"itemlocker.config.messages": "Meldungen",
@@ -39,6 +40,7 @@
 	"itemlocker.message.blocked": "%s gesperrt - noch %sx droppen (von %s)",
 	"itemlocker.message.released": "%s wurde gedroppt",
 	"itemlocker.message.frozen": "Slot %s ist gesperrt - Inhalt bleibt drin",
+	"itemlocker.message.armor_stand": "%s ist gesperrt - kommt nicht an den Ruestungsstaender",
 	"itemlocker.message.slot_locked": "Hotbar-Slot %s gesperrt",
 	"itemlocker.message.slot_unlocked": "Hotbar-Slot %s entsperrt",
 	"itemlocker.message.item_locked": "%s gesperrt (%s)",
@@ -61,6 +63,7 @@
 	"itemlocker.command.messages": "Meldungen: %s",
 	"itemlocker.command.inventory": "Schutz im Inventar: %s",
 	"itemlocker.command.freeze": "Gesperrte Slots einfrieren: %s",
+	"itemlocker.command.armor_stands": "Schutz vor Ruestungsstaendern: %s",
 
 	"itemlocker.help.config": "/itemlocker config - Einstellungs-Menue oeffnen",
 	"itemlocker.help.slot": "/itemlocker slot <1-9> - Hotbar-Slot sperren/entsperren",
@@ -70,6 +73,6 @@
 	"itemlocker.help.list": "/itemlocker list - alle Sperren anzeigen",
 	"itemlocker.help.clear": "/itemlocker clear - alle Sperren loeschen",
 	"itemlocker.help.toggle": "/itemlocker on | off - Mod an- oder ausschalten",
-	"itemlocker.help.hud": "/itemlocker hud|sound|messages|inventory|freeze <true|false>",
+	"itemlocker.help.hud": "/itemlocker hud|sound|messages|inventory|freeze|armorstands <true|false>",
 	"itemlocker.help.keys": "Tasten: L = Slot sperren, K = Item sperren"
 }

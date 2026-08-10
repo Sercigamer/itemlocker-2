@@ -71,6 +71,13 @@ public class ItemLockerConfigScreen extends Screen {
 							ConfigManager.save();
 						}));
 
+		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.protectArmorStands)
+				.build(leftX, top + ROW_HEIGHT * 5, COLUMN_WIDTH, 20,
+						Text.translatable("itemlocker.config.armor_stands"), (button, value) -> {
+							config.protectArmorStands = value;
+							ConfigManager.save();
+						}));
+
 		// Rechte Spalte
 		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.showHudIcons)
 				.build(rightX, top, COLUMN_WIDTH, 20, Text.translatable("itemlocker.config.hud"),

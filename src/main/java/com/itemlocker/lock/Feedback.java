@@ -60,6 +60,24 @@ public final class Feedback {
 		}
 	}
 
+	public static void armorStandBlocked(ItemStack stack) {
+		LockerConfig config = ConfigManager.get();
+		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+		if (player == null) {
+			return;
+		}
+
+		if (config.actionBarMessages) {
+			player.sendMessage(Text.translatable("itemlocker.message.armor_stand",
+					stack.getName().copy().formatted(Formatting.WHITE)).formatted(Formatting.RED), true);
+		}
+
+		if (config.playSound) {
+			playSound(0.5F);
+		}
+	}
+
 	public static void slotFrozen(int hotbarSlot) {
 		LockerConfig config = ConfigManager.get();
 		ClientPlayerEntity player = MinecraftClient.getInstance().player;

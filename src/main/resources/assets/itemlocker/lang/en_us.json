@@ -10,6 +10,7 @@
 	"itemlocker.config.timeout": "Counter reset: %s s",
 	"itemlocker.config.guard_inventory": "Inventory protection",
 	"itemlocker.config.freeze_slots": "Freeze slots",
+	"itemlocker.config.armor_stands": "Armor stands",
 	"itemlocker.config.hud": "Lock icons",
 	"itemlocker.config.sound": "Sound",
 	"itemlocker.config.messages": "Messages",
@@ -39,6 +40,7 @@
 	"itemlocker.message.blocked": "%s is locked - drop %sx more (of %s)",
 	"itemlocker.message.released": "%s dropped",
 	"itemlocker.message.frozen": "Slot %s is locked - contents stay put",
+	"itemlocker.message.armor_stand": "%s is locked - it stays off the armor stand",
 	"itemlocker.message.slot_locked": "Hotbar slot %s locked",
 	"itemlocker.message.slot_unlocked": "Hotbar slot %s unlocked",
 	"itemlocker.message.item_locked": "%s locked (%s)",
@@ -61,6 +63,7 @@
 	"itemlocker.command.messages": "Messages: %s",
 	"itemlocker.command.inventory": "Inventory protection: %s",
 	"itemlocker.command.freeze": "Freeze locked slots: %s",
+	"itemlocker.command.armor_stands": "Armor stand protection: %s",
 
 	"itemlocker.help.config": "/itemlocker config - open the settings menu",
 	"itemlocker.help.slot": "/itemlocker slot <1-9> - lock/unlock a hotbar slot",
@@ -70,6 +73,6 @@
 	"itemlocker.help.list": "/itemlocker list - show all locks",
 	"itemlocker.help.clear": "/itemlocker clear - remove all locks",
 	"itemlocker.help.toggle": "/itemlocker on | off - enable or disable the mod",
-	"itemlocker.help.hud": "/itemlocker hud|sound|messages|inventory|freeze <true|false>",
+	"itemlocker.help.hud": "/itemlocker hud|sound|messages|inventory|freeze|armorstands <true|false>",
 	"itemlocker.help.keys": "Keys: L = lock slot, K = lock item"
 }
