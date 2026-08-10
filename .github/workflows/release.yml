@@ -61,11 +61,12 @@ jobs:
           rm -f release/*-sources.jar
           ls -l release
 
-      - name: Release-Text aus CHANGELOG bauen
+      - name: Release-Text aus CHANGELOG und Vorlage bauen
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           MC=$(grep -E '^minecraft_version=' gradle.properties | cut -d= -f2- | tr -d '[:space:]')
+          JAR=$(basename release/*.jar)
 
           # Bewusst ohne Regex: die eckigen Klammern der Ueberschrift muessten
           # sonst doppelt escaped werden, was leicht still danebengeht.
@@ -80,33 +81,23 @@ jobs:
             exit 1
           fi
 
-          JAR=$(basename release/*.jar)
+          # Erst den Changelog-Block einsetzen, dann die einfachen Platzhalter.
+          # Der Text steht in .github/release-template.md - dort laesst er sich
+          # gefahrlos bearbeiten, ohne Shell-Escaping.
+          sed -e '/{{CHANGELOG}}/r section.md' -e '/{{CHANGELOG}}/d' \
+            .github/release-template.md > release-body.md
 
-          {
-            echo "> Client-seitige Fabric-Mod fuer Minecraft $MC. Gesperrte Items"
-            echo "> fallen nicht beim ersten Drop-Versuch."
-            echo
-            cat section.md
-            echo
-            echo "## Installation"
-            echo
-            echo "1. [Fabric Loader](https://fabricmc.net/use/installer/) fuer **$MC** installieren"
-            echo "2. [Fabric API](https://modrinth.com/mod/fabric-api) in den \`mods\`-Ordner legen (zwingend)"
-            echo "3. \`$JAR\` daneben legen"
-            echo "4. Optional: [Mod Menu](https://modrinth.com/mod/modmenu) fuer den Zahnrad-Knopf"
-            echo
-            echo "Lunar Client: beide Jars nach \`%USERPROFILE%\\.lunarclient\\mods\\$MC\`."
-            echo
-            echo "## Schnellstart"
-            echo
-            echo "| Aktion | Wie |"
-            echo "| --- | --- |"
-            echo "| Menue oeffnen | \`/itemlocker config\` |"
-            echo "| Hotbar-Slot sperren | Taste \`L\` |"
-            echo "| Item in der Hand sperren | Taste \`K\` |"
-            echo
-            echo "Volle Anleitung im [README](https://github.com/${GITHUB_USER}/itemlocker#readme)."
-          } > release-body.md
+          sed -i \
+            -e "s|{{MC_VERSION}}|$MC|g" \
+            -e "s|{{JAR}}|$JAR|g" \
+            -e "s|{{REPO_FULL}}|$GITHUB_REPOSITORY|g" \
+            release-body.md
+
+          if grep -q '{{' release-body.md; then
+            echo "::error::Im Release-Text ist ein Platzhalter uebrig geblieben."
+            grep -n '{{' release-body.md
+            exit 1
+          fi
 
           cat release-body.md
 
