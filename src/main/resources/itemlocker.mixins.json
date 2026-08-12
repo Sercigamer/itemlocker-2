@@ -4,8 +4,11 @@
 	"package": "com.itemlocker.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"ClientCommonNetworkHandlerMixin",
 		"ClientPlayerEntityMixin",
-		"ClientPlayerInteractionManagerMixin"
+		"ClientPlayerInteractionManagerMixin",
+		"CreativeInventoryScreenMixin",
+		"HandledScreenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

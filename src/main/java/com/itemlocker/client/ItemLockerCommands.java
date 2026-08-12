@@ -15,9 +15,16 @@ import com.itemlocker.config.LockerConfig;
 import com.itemlocker.lock.DropGuard;
 import com.itemlocker.lock.LockManager;
 
+import com.itemlocker.lock.PlacementGuard;
+
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
@@ -83,6 +90,29 @@ public final class ItemLockerCommands {
 								return saveAndReport(ctx, "itemlocker.command.inventory",
 										ConfigManager.get().guardInventoryScreens);
 							})))
+					.then(literal("pots")
+							.then(argument("value", BoolArgumentType.bool()).executes(ctx -> {
+								ConfigManager.get().protectDecoratedPots = BoolArgumentType.getBool(ctx, "value");
+								return saveAndReport(ctx, "itemlocker.command.pots",
+										ConfigManager.get().protectDecoratedPots);
+							})))
+					.then(literal("offhand")
+							.then(argument("value", BoolArgumentType.bool()).executes(ctx -> {
+								ConfigManager.get().preventOffhandSwap = BoolArgumentType.getBool(ctx, "value");
+								return saveAndReport(ctx, "itemlocker.command.offhand",
+										ConfigManager.get().preventOffhandSwap);
+							})))
+					.then(literal("sneakbypass")
+							.then(argument("value", BoolArgumentType.bool()).executes(ctx -> {
+								ConfigManager.get().blockGuiSneakBypass = BoolArgumentType.getBool(ctx, "value");
+								return saveAndReport(ctx, "itemlocker.command.sneakbypass",
+										ConfigManager.get().blockGuiSneakBypass);
+							})))
+					.then(literal("block")
+							.executes(ItemLockerCommands::toggleLookedAtBlock)
+							.then(argument("id", StringArgumentType.greedyString())
+									.suggests(ItemLockerCommands::suggestBlocks)
+									.executes(ItemLockerCommands::toggleBlockById)))
 					.then(literal("armorstands")
 							.then(argument("value", BoolArgumentType.bool()).executes(ctx -> {
 								ConfigManager.get().protectArmorStands = BoolArgumentType.getBool(ctx, "value");
@@ -113,6 +143,7 @@ public final class ItemLockerCommands {
 
 		for (String line : new String[] {
 				"itemlocker.help.config",
+				"itemlocker.help.block",
 				"itemlocker.help.slot",
 				"itemlocker.help.item",
 				"itemlocker.help.item_id",
@@ -278,6 +309,74 @@ public final class ItemLockerCommands {
 				: "itemlocker.message.item_unlocked", itemId, itemId)
 				.formatted(locked ? Formatting.RED : Formatting.GREEN));
 		return 1;
+	}
+
+	/** Sperrt oder entsperrt den Block, den der Spieler gerade anvisiert. */
+	private static int toggleLookedAtBlock(CommandContext<FabricClientCommandSource> ctx) {
+		MinecraftClient client = MinecraftClient.getInstance();
+
+		if (client.crosshairTarget == null || client.crosshairTarget.getType() != HitResult.Type.BLOCK
+				|| client.player == null) {
+			ctx.getSource().sendError(Text.translatable("itemlocker.command.no_block"));
+			return 0;
+		}
+
+		BlockHitResult hit = (BlockHitResult) client.crosshairTarget;
+		Block block = client.player.getEntityWorld().getBlockState(hit.getBlockPos()).getBlock();
+
+		if (block == Blocks.AIR) {
+			ctx.getSource().sendError(Text.translatable("itemlocker.command.no_block"));
+			return 0;
+		}
+
+		return applyBlockLock(ctx, PlacementGuard.blockId(block), block.getName());
+	}
+
+	private static int toggleBlockById(CommandContext<FabricClientCommandSource> ctx) {
+		String raw = StringArgumentType.getString(ctx, "id").trim().toLowerCase(Locale.ROOT);
+		Identifier id = Identifier.tryParse(raw);
+
+		if (id == null || !Registries.BLOCK.getIds().contains(id)) {
+			ctx.getSource().sendError(Text.translatable("itemlocker.command.unknown_block", raw));
+			return 0;
+		}
+
+		return applyBlockLock(ctx, id.toString(), Text.literal(id.toString()));
+	}
+
+	private static int applyBlockLock(CommandContext<FabricClientCommandSource> ctx, String blockId, Text name) {
+		LockerConfig config = ConfigManager.get();
+		boolean locked;
+
+		if (config.lockedBlocks.contains(blockId)) {
+			config.lockedBlocks.remove(blockId);
+			locked = false;
+		} else {
+			config.lockedBlocks.add(blockId);
+			locked = true;
+		}
+
+		ConfigManager.save();
+		ctx.getSource().sendFeedback(Text.translatable(locked
+				? "itemlocker.message.block_locked"
+				: "itemlocker.message.block_unlocked", name.copy().formatted(Formatting.WHITE), blockId)
+				.formatted(locked ? Formatting.RED : Formatting.GREEN));
+		return 1;
+	}
+
+	private static java.util.concurrent.CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestBlocks(
+			CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder) {
+		String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+
+		for (Identifier id : Registries.BLOCK.getIds()) {
+			String full = id.toString();
+
+			if (full.startsWith(remaining) || id.getPath().startsWith(remaining)) {
+				builder.suggest(full);
+			}
+		}
+
+		return builder.buildFuture();
 	}
 
 	private static java.util.concurrent.CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestItems(

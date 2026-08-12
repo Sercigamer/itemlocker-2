@@ -78,23 +78,37 @@ public class ItemLockerConfigScreen extends Screen {
 							ConfigManager.save();
 						}));
 
+		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.protectDecoratedPots)
+				.build(leftX, top + ROW_HEIGHT * 6, COLUMN_WIDTH, 20,
+						Text.translatable("itemlocker.config.pots"), (button, value) -> {
+							config.protectDecoratedPots = value;
+							ConfigManager.save();
+						}));
+
 		// Rechte Spalte
+		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.preventOffhandSwap)
+				.build(rightX, top, COLUMN_WIDTH, 20, Text.translatable("itemlocker.config.offhand"),
+						(button, value) -> {
+							config.preventOffhandSwap = value;
+							ConfigManager.save();
+						}));
+
 		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.showHudIcons)
-				.build(rightX, top, COLUMN_WIDTH, 20, Text.translatable("itemlocker.config.hud"),
+				.build(rightX, top + ROW_HEIGHT, COLUMN_WIDTH, 20, Text.translatable("itemlocker.config.hud"),
 						(button, value) -> {
 							config.showHudIcons = value;
 							ConfigManager.save();
 						}));
 
 		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.playSound)
-				.build(rightX, top + ROW_HEIGHT, COLUMN_WIDTH, 20, Text.translatable("itemlocker.config.sound"),
+				.build(rightX, top + ROW_HEIGHT * 2, COLUMN_WIDTH, 20, Text.translatable("itemlocker.config.sound"),
 						(button, value) -> {
 							config.playSound = value;
 							ConfigManager.save();
 						}));
 
 		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.actionBarMessages)
-				.build(rightX, top + ROW_HEIGHT * 2, COLUMN_WIDTH, 20,
+				.build(rightX, top + ROW_HEIGHT * 3, COLUMN_WIDTH, 20,
 						Text.translatable("itemlocker.config.messages"), (button, value) -> {
 							config.actionBarMessages = value;
 							ConfigManager.save();
@@ -103,12 +117,17 @@ public class ItemLockerConfigScreen extends Screen {
 		addDrawableChild(ButtonWidget
 				.builder(Text.translatable("itemlocker.config.open_slots", config.lockedSlots.size()),
 						button -> this.client.setScreen(new SlotLockScreen(this)))
-				.dimensions(rightX, top + ROW_HEIGHT * 3, COLUMN_WIDTH, 20).build());
+				.dimensions(rightX, top + ROW_HEIGHT * 4, COLUMN_WIDTH, 20).build());
 
 		addDrawableChild(ButtonWidget
 				.builder(Text.translatable("itemlocker.config.open_items", config.lockedItems.size()),
 						button -> this.client.setScreen(new ItemLockScreen(this)))
-				.dimensions(rightX, top + ROW_HEIGHT * 4, COLUMN_WIDTH, 20).build());
+				.dimensions(rightX, top + ROW_HEIGHT * 5, COLUMN_WIDTH, 20).build());
+
+		addDrawableChild(ButtonWidget
+				.builder(Text.translatable("itemlocker.config.open_blocks", config.lockedBlocks.size()),
+						button -> this.client.setScreen(new BlockLockScreen(this)))
+				.dimensions(rightX, top + ROW_HEIGHT * 6, COLUMN_WIDTH, 20).build());
 
 		addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> this.close())
 				.dimensions(centerX - 100, this.height - 30, 200, 20).build());

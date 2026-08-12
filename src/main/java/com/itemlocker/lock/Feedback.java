@@ -78,6 +78,39 @@ public final class Feedback {
 		}
 	}
 
+	public static void potBlocked(ItemStack stack) {
+		warn(Text.translatable("itemlocker.message.pot",
+				stack.getName().copy().formatted(Formatting.WHITE)));
+	}
+
+	public static void blockGuiBlocked(Text blockName, boolean sneakBypass) {
+		warn(Text.translatable(sneakBypass
+				? "itemlocker.message.block_gui_sneak"
+				: "itemlocker.message.block_gui",
+				blockName.copy().formatted(Formatting.WHITE)));
+	}
+
+	public static void offhandBlocked() {
+		warn(Text.translatable("itemlocker.message.offhand"));
+	}
+
+	private static void warn(Text message) {
+		LockerConfig config = ConfigManager.get();
+		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+		if (player == null) {
+			return;
+		}
+
+		if (config.actionBarMessages) {
+			player.sendMessage(message.copy().formatted(Formatting.RED), true);
+		}
+
+		if (config.playSound) {
+			playSound(0.5F);
+		}
+	}
+
 	public static void slotFrozen(int hotbarSlot) {
 		LockerConfig config = ConfigManager.get();
 		ClientPlayerEntity player = MinecraftClient.getInstance().player;

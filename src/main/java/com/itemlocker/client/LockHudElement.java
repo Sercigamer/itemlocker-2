@@ -55,9 +55,9 @@ public final class LockHudElement implements HudElement {
 			}
 
 			int slotLeft = hotbarLeft + 3 + slot * SLOT_SIZE;
-			int color = slotLocked ? COLOR_SLOT_LOCK : COLOR_ITEM_LOCK;
+			int color = slotLocked ? LockIcon.COLOR_SLOT : LockIcon.COLOR_ITEM;
 
-			drawPadlock(context, slotLeft + 11, hotbarTop + 2, color);
+			LockIcon.draw(context, slotLeft + 11, hotbarTop + 2, color);
 
 			int attempts = DropGuard.attemptsForHotbar(slot, stack);
 

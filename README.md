@@ -43,7 +43,7 @@ gesperrte Sachen fallen erst, wenn du die Drop-Taste **mehrfach hintereinander**
 
 ItemLocker legt einen Riegel davor. Du markierst, was dir wichtig ist, und ab dann braucht ein Drop **fünf Versuche statt einem** (frei einstellbar, 1–64). Ein Fehlgriff reicht nicht mehr. Absichtlich wegwerfen kannst du trotzdem — du musst es nur ernst meinen.
 
-Dazu gibt es zwei harte Sperren für Wege, auf denen ein Item still und leise verschwindet: aus einem gesperrten Slot herausziehen und an einen **Rüstungsständer** anlegen.
+Dazu kommen harte Sperren für Wege, auf denen ein Item ohne Drop verschwindet: aus einem gesperrten Slot herausziehen, an einen **Rüstungsständer** anlegen, in einen **Deko-Topf** stecken oder in die **Zweithand** tauschen. Und eine **Block-Sperre** gegen die Endertruhe, auf die man mitten im Kampf klickt.
 
 ---
 
@@ -55,7 +55,7 @@ Du brauchst immer: **Minecraft 1.21.11**, **Fabric Loader**, **Fabric API** und 
 
 1. [Fabric Loader](https://fabricmc.net/use/installer/) für 1.21.11 installieren
 2. [Fabric API](https://modrinth.com/mod/fabric-api) für 1.21.11 in den `mods`-Ordner
-3. `itemlocker-1.3.0.jar` daneben legen
+3. `itemlocker-1.4.0.jar` daneben legen
 4. *Optional:* [Mod Menu](https://modrinth.com/mod/modmenu) für den Zahnrad-Knopf im Mod-Menü
 
 Der `mods`-Ordner liegt unter `%APPDATA%\.minecraft\mods` (Windows) bzw. `~/.minecraft/mods` (Linux) oder `~/Library/Application Support/minecraft/mods` (macOS).
@@ -127,6 +127,8 @@ Beide zusammen sind erlaubt und schließen sich nicht aus.
 | Mit der Maus aufnehmen, neben das Fenster klicken | Aufnehmen blockiert | 5× nötig |
 | Droppen aus dem **Kreativ**-Inventar | — | 5× nötig |
 | An einen **Rüstungsständer** anlegen | hart blockiert | hart blockiert |
+| In einen **Deko-Topf** stecken | hart blockiert | hart blockiert |
+| In die **Zweithand** tauschen (Taste oder Inventar) | hart blockiert | hart blockiert |
 | Shift-Klick / Zahlentaste aus dem Slot heraus | blockiert | — |
 
 Ein paar Erläuterungen dazu:
@@ -239,12 +241,21 @@ Falls Minecraft einen Konflikt mit einer anderen Belegung anzeigt (kleines Warnd
 | `/itemlocker inventory <true\|false>` | Schutz in Inventar-Bildschirmen |
 | `/itemlocker freeze <true\|false>` | Gesperrte Slots festhalten |
 | `/itemlocker armorstands <true\|false>` | Schutz vor Rüstungsständern |
+| `/itemlocker pots <true\|false>` | Schutz vor Deko-Töpfen |
+| `/itemlocker offhand <true\|false>` | Zweithand-Schutz |
+| `/itemlocker block` | Block, den du ansiehst, sperren / freigeben |
+| `/itemlocker block <id>` | Block per Name, z. B. `minecraft:ender_chest` |
+| `/itemlocker sneakbypass <true\|false>` | Ob Schleichen die Block-Sperre umgeht |
 
 Bei `/itemlocker item <id>` schlägt die Tab-Vervollständigung alle Item-IDs vor.
 
 ---
 
 ## Die Anzeige über der Hotbar
+
+Die Schlösser erscheinen über der Hotbar **und im offenen Inventar**:
+
+![Schlösser im Inventar](docs/inventory-locks.png)
 
 - **Rotes Schloss** auf einem Slot → Slot-Sperre
 - **Blaues Schloss** → das Item darin ist als Typ gesperrt
@@ -285,6 +296,10 @@ Liegt unter `config/itemlocker.json` und wird beim ersten Start angelegt. Änder
 | `guardInventoryScreens` | `true` | Schutz auch in Inventar- und Kisten-Bildschirmen. |
 | `preventTakingFromLockedSlots` | `true` | Hält den Inhalt gesperrter Slots im Inventar fest. |
 | `protectArmorStands` | `true` | Verhindert das Anlegen an Rüstungsständer. |
+| `protectDecoratedPots` | `true` | Verhindert das Einfüllen in Deko-Töpfe. |
+| `preventOffhandSwap` | `true` | Verhindert den Tausch in die Zweithand. |
+| `lockedBlocks` | `[]` | Blöcke, deren Oberfläche gesperrt ist, als Registry-ID. |
+| `blockGuiSneakBypass` | `true` | Schleichen öffnet gesperrte Blöcke trotzdem. |
 | `showHudIcons` | `true` | Schlösser und Fortschrittsbalken zeichnen. |
 | `playSound` | `true` | Warn-Sound bei geblocktem Versuch. |
 | `actionBarMessages` | `true` | Text über der Hotbar. |
@@ -307,9 +322,12 @@ ItemLocker ist **rein clientseitig**. Es hängt sich per [Mixin](https://github.
 | --- | --- |
 | `ClientPlayerEntity.dropSelectedItem` | `Q` und `Strg+Q` aus der Hand |
 | `ClientPlayerInteractionManager.clickSlot` | Drops in Inventar-Bildschirmen |
-| `ClientPlayerInteractionManager.dropCreativeStack` | Drops aus dem Kreativ-Inventar |
+| `CreativeInventoryScreen.onMouseClick` | Drops aus dem Kreativ-Inventar |
 | `ClientPlayerInteractionManager.interactEntityAtLocation` | Rüstungsständer |
 | `ClientPlayerInteractionManager.interactEntity` | Rüstungsständer (Rückfallweg) |
+| `ClientPlayerInteractionManager.interactBlock` | Deko-Töpfe und gesperrte Blöcke |
+| `ClientCommonNetworkHandler.sendPacket` | Tausch in die Zweithand |
+| `HandledScreen.drawSlot` | Schloss-Symbole im Inventar |
 
 Entscheidend: Der Eingriff sitzt **vor** dem Netzwerkpaket und **vor** der lokalen Inventar-Änderung. Ein geblockter Drop erzeugt gar kein Paket — der Server erfährt nichts davon, und es kann kein Desync entstehen.
 
@@ -371,7 +389,7 @@ Du brauchst **JDK 21**. Fehlt es, lädt Gradle es automatisch nach.
 ./gradlew build
 ```
 
-Das fertige Jar liegt unter `build/libs/itemlocker-1.3.0.jar`. Die Datei mit `-sources` im Namen wird zum Spielen nicht gebraucht.
+Das fertige Jar liegt unter `build/libs/itemlocker-1.4.0.jar`. Die Datei mit `-sources` im Namen wird zum Spielen nicht gebraucht.
 
 Entwicklungs-Client mit eingebautem Selbsttest starten:
 

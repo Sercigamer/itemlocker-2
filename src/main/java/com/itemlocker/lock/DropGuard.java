@@ -99,6 +99,15 @@ public final class DropGuard {
 			return blockDrop(CONTEXT_SCREEN, hotbarSlot, stack);
 		}
 
+		// Der zweite Weg in die Zweithand: Zweithand-Taste im offenen Inventar.
+		if (actionType == SlotActionType.SWAP
+				&& button == PlayerInventory.OFF_HAND_SLOT
+				&& config.preventOffhandSwap
+				&& (LockManager.isItemLocked(stack) || LockManager.isItemLocked(player.getOffHandStack()))) {
+			Feedback.offhandBlocked();
+			return true;
+		}
+
 		// Inhalt eines gesperrten Slots festhalten. Ohne das koennte man ihn
 		// aufnehmen und dann ausserhalb des Fensters fallen lassen - dort ist
 		// er nicht mehr im gesperrten Slot und waere ungeschuetzt.
@@ -113,23 +122,34 @@ public final class DropGuard {
 	}
 
 	/**
-	 * Droppen aus dem Kreativ-Inventar.
+	 * Klick im Kreativ-Inventar.
 	 *
-	 * <p>Das Kreativ-Inventar geht nicht ueber {@code clickSlot}, sondern ruft
-	 * {@code dropCreativeStack} auf. Ohne diesen Weg fiel ein gesperrtes Item im
-	 * Kreativmodus beim ersten Versuch.
+	 * <p>Muss ganz am Anfang von {@code onMouseClick} greifen: Der Bildschirm
+	 * raeumt den Slot leer und ruft <em>erst danach</em> {@code dropCreativeStack}.
+	 * Wer nur den Drop abfaengt, verhindert zwar das Fallen - das Item ist aber
+	 * lokal schon aus dem Slot verschwunden.
 	 *
-	 * <p>Welcher Slot dahintersteckt, ist hier nicht mehr bekannt - deshalb kann
-	 * nur die Item-Sperre greifen, nicht die Slot-Sperre.
+	 * <p>Welcher Hotbar-Slot dahintersteckt, laesst sich hier nicht zuordnen -
+	 * es greift also nur die Item-Sperre.
 	 */
-	public static boolean blockCreativeDrop(ItemStack stack) {
+	public static boolean blockCreativeScreenClick(Slot slot, SlotActionType actionType, PlayerEntity player) {
 		LockerConfig config = ConfigManager.get();
 
-		if (!config.enabled || !config.guardInventoryScreens) {
+		if (!config.enabled || !config.guardInventoryScreens || player == null) {
 			return false;
 		}
 
-		return blockDrop(CONTEXT_CREATIVE, -1, stack);
+		// slot == null heisst: Klick neben das Fenster, der Stack am Cursor faellt.
+		if (slot == null) {
+			ScreenHandler handler = player.currentScreenHandler;
+			return handler != null && blockDrop(CONTEXT_CREATIVE, -1, handler.getCursorStack());
+		}
+
+		if (actionType == SlotActionType.THROW) {
+			return blockDrop(CONTEXT_CREATIVE, -1, slot.getStack());
+		}
+
+		return false;
 	}
 
 	/**

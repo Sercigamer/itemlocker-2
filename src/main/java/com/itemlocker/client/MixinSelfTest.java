@@ -29,9 +29,12 @@ public final class MixinSelfTest {
 
 		check("net.minecraft.class_746", "itemlocker$guardHotbarDrop");
 		check("net.minecraft.class_636", "itemlocker$guardSlotClick");
-		check("net.minecraft.class_636", "itemlocker$guardCreativeDrop");
+		check("net.minecraft.class_481", "itemlocker$guardCreativeClick");
+		check("net.minecraft.class_465", "itemlocker$drawLockIcon");
 		check("net.minecraft.class_636", "itemlocker$guardEntityUseAtLocation");
 		check("net.minecraft.class_636", "itemlocker$guardEntityUse");
+		check("net.minecraft.class_636", "itemlocker$guardBlockUse");
+		check("net.minecraft.class_8673", "itemlocker$guardOffhandSwap");
 	}
 
 	private static void check(String intermediaryName, String injectedMethod) {

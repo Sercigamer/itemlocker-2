@@ -2,6 +2,21 @@
 
 Alle nennenswerten Änderungen an ItemLocker.
 
+## [1.4.0]
+
+### Neu
+
+- **Deko-Töpfe**: Gesperrte Sachen lassen sich nicht mehr in einen Topf stecken.
+- **Block-Sperre**: Ausgewählte Blöcke lassen sich nicht mehr per Rechtsklick öffnen — gedacht gegen die Endertruhe, auf die man mitten im Kampf klickt. Schleichen umgeht die Sperre, damit du trotzdem drankommst.
+- **Zweithand-Schutz**: Ein gesperrtes Item wandert nicht mehr in die Zweithand — weder über die Taste noch über die Zweithand-Taste im offenen Inventar.
+- **Schloss-Symbole im Inventar**: Gesperrte Slots und Items sind jetzt auch im offenen Inventar markiert, nicht nur über der Hotbar.
+- Neuer Bildschirm **Blöcke…** mit Suche, Filter und „Angeschauten Block sperren".
+- Neue Befehle: `/itemlocker block [id]`, `pots`, `offhand`, `sneakbypass`.
+
+### Behoben
+
+- Im **Kreativmodus verschwand** ein gesperrtes Item beim Drop-Versuch, statt liegen zu bleiben. Der Kreativ-Bildschirm räumt den Slot leer und schickt den Drop erst danach — der Schutz saß dahinter und hat nur noch das Fallen verhindert. Er greift jetzt davor.
+
 ## [1.3.0]
 
 ### Neu

@@ -42,6 +42,26 @@ public class LockerConfig {
 	 */
 	public boolean protectArmorStands = true;
 
+	/** Verhindert, dass gesperrte Sachen in einen Deko-Topf wandern. */
+	public boolean protectDecoratedPots = true;
+
+	/**
+	 * Verhindert, dass ein gesperrtes Item in die Zweithand getauscht wird.
+	 *
+	 * <p>Die Taste dafuer liegt bei vielen direkt neben den Bewegungstasten -
+	 * ein Fehlgriff im Kampf schiebt sonst das Totem aus der Hand.
+	 */
+	public boolean preventOffhandSwap = true;
+
+	/**
+	 * Bloecke, deren Oberflaeche sich nicht per Rechtsklick oeffnen laesst -
+	 * als Registry-ID, z.B. {@code minecraft:ender_chest}.
+	 */
+	public Set<String> lockedBlocks = new LinkedHashSet<>();
+
+	/** Schleichen umgeht die Block-Sperre, damit man trotzdem drankommt. */
+	public boolean blockGuiSneakBypass = true;
+
 	/** Schloss-Symbole ueber der Hotbar zeichnen. */
 	public boolean showHudIcons = true;
 
@@ -81,6 +101,12 @@ public class LockerConfig {
 		if (lockedItems == null) {
 			lockedItems = new LinkedHashSet<>();
 		}
+
+		if (lockedBlocks == null) {
+			lockedBlocks = new LinkedHashSet<>();
+		}
+
+		lockedBlocks.removeIf(block -> block == null || block.isBlank());
 
 		lockedSlots.removeIf(slot -> slot == null || slot < 0 || slot > 8);
 		lockedItems.removeIf(item -> item == null || item.isBlank());
