@@ -14,37 +14,47 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 /**
- * Zeichnet das Schloss auch im offenen Inventar auf gesperrte Slots und Items -
- * damit man dort auf einen Blick sieht, was geschuetzt ist, und nicht erst beim
- * Drop-Versuch.
+ * Zeichnet das Schloss auch im offenen Inventar auf gesperrte Slots und Items.
+ *
+ * <p>Ab 26.x gibt es kein {@code drawSlot} mehr, an das man sich pro Slot
+ * haengen koennte. Stattdessen wird einmal am Ende von {@code extractSlots}
+ * ueber alle Slots gelaufen - {@code Slot.x}/{@code Slot.y} liefern weiterhin
+ * die Position.
  */
 @Mixin(AbstractContainerScreen.class)
 public abstract class HandledScreenMixin {
-	// Achtung: die beiden int-Parameter sind die Mausposition, nicht die des
-	// Slots. Vanilla positioniert ueber slot.x / slot.y - hier genauso.
-	@Inject(method = "drawSlot", at = @At("TAIL"))
-	private void itemlocker$drawLockIcon(GuiGraphicsExtractor context, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
+	@Inject(method = "extractSlots", at = @At("TAIL"))
+	private void itemlocker$drawLockIcon(GuiGraphicsExtractor extractor, int mouseX, int mouseY, CallbackInfo ci) {
 		if (!ConfigManager.get().enabled || !ConfigManager.get().showHudIcons) {
 			return;
 		}
 
-		ItemStack stack = slot.getItem();
+		LocalPlayer player = Minecraft.getInstance().player;
 
-		if (stack.isEmpty()) {
+		if (player == null) {
 			return;
 		}
 
-		LocalPlayer player = Minecraft.getInstance().player;
-		int color = LockIcon.colorFor(player == null ? -1 : hotbarIndexOf(slot, player), stack);
+		AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
 
-		if (color != 0) {
-			// Obere linke Ecke des 16x16-Feldes, damit die Stapelzahl unten
-			// rechts frei bleibt.
-			LockIcon.draw(context, slot.x + 1, slot.y + 1, color);
+		for (Slot slot : screen.getMenu().slots) {
+			ItemStack stack = slot.getItem();
+
+			if (stack.isEmpty()) {
+				continue;
+			}
+
+			int color = LockIcon.colorFor(hotbarIndexOf(slot, player), stack);
+
+			if (color != 0) {
+				// Obere linke Ecke des 16x16-Feldes, damit die Stapelzahl unten
+				// rechts frei bleibt.
+				LockIcon.draw(extractor, slot.x + 1, slot.y + 1, color);
+			}
 		}
 	}
 

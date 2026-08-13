@@ -1,5 +1,7 @@
 package com.itemlocker.client.screen;
 
+import com.itemlocker.client.Draw;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -74,7 +76,7 @@ public class BlockLockScreen extends Screen {
 		addRenderableWidget(CycleButton.<Filter>builder(Filter::label, this.filter)
 				.withValues(Filter.values())
 				.displayOnlyValue()
-				.build(centerX + 50, 30, 105, 20, Component.empty(), (button, value) -> {
+				.create(centerX + 50, 30, 105, 20, Component.empty(), (button, value) -> {
 					this.filter = value;
 					refreshList();
 				}));
@@ -95,7 +97,7 @@ public class BlockLockScreen extends Screen {
 				.builder(Component.translatable("itemlocker.config.blocks.lock_looked"), button -> lockLookedAtBlock())
 				.bounds(centerX + 5, this.height - 56, 150, 20).build());
 
-		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> this.close())
+		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> this.onClose())
 				.bounds(centerX - 100, this.height - 30, 200, 20).build());
 
 		refreshList();
@@ -170,22 +172,22 @@ public class BlockLockScreen extends Screen {
 	}
 
 	@Override
-	public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-		super.render(context, mouseX, mouseY, deltaTicks);
+	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+		super.extractRenderState(context, mouseX, mouseY, deltaTicks);
 
-		context.drawCenteredTextWithShadow(this.font, this.title, this.width / 2, 14, 0xFFFFFFFF);
+		Draw.centered(context, this.font, this.title, this.width / 2, 14, 0xFFFFFFFF);
 
 		Component hint = Component.translatable(ConfigManager.get().blockGuiSneakBypass
 				? "itemlocker.config.blocks.count_sneak"
 				: "itemlocker.config.blocks.count", ConfigManager.get().lockedBlocks.size())
 				.withStyle(ChatFormatting.GRAY);
-		context.drawCenteredTextWithShadow(this.font, hint, this.width / 2, this.height - 68, 0xFFAAAAAA);
+		Draw.centered(context, this.font, hint, this.width / 2, this.height - 68, 0xFFAAAAAA);
 	}
 
 	@Override
-	public void close() {
+	public void onClose() {
 		ConfigManager.save();
-		this.minecraft.setScreen(this.parent);
+		this.minecraft.setScreenAndShow(this.parent);
 	}
 
 	private class BlockListWidget extends ObjectSelectionList<BlockEntry> {
@@ -218,27 +220,27 @@ public class BlockLockScreen extends Screen {
 		}
 
 		@Override
-		public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 			int x = getContentX();
 			int y = getContentY();
 			int width = getContentWidth();
 			boolean locked = PlacementGuard.isBlockLocked(block);
 
 			if (locked) {
-				extractor.fill(x, y, x + width, y + getContentHeight() - 2, 0x40FF5555);
+				context.fill(x, y, x + width, y + getContentHeight() - 2, 0x40FF5555);
 			} else if (hovered) {
-				extractor.fill(x, y, x + width, y + getContentHeight() - 2, 0x30FFFFFF);
+				context.fill(x, y, x + width, y + getContentHeight() - 2, 0x30FFFFFF);
 			}
 
 			if (!icon.isEmpty()) {
 				context.item(icon, x + 4, y + 3);
 			}
 
-			context.drawTextWithShadow(BlockLockScreen.this.font,
+			Draw.text(context, BlockLockScreen.this.font,
 					Component.literal(name).withStyle(locked ? ChatFormatting.RED : ChatFormatting.WHITE),
 					x + 26, y + 2, 0xFFFFFFFF);
 
-			context.drawTextWithShadow(BlockLockScreen.this.font,
+			Draw.text(context, BlockLockScreen.this.font,
 					Component.literal(id).withStyle(ChatFormatting.DARK_GRAY),
 					x + 26, y + 13, 0xFF555555);
 
@@ -248,7 +250,7 @@ public class BlockLockScreen extends Screen {
 					.withStyle(locked ? ChatFormatting.RED : ChatFormatting.DARK_GRAY);
 
 			int stateWidth = BlockLockScreen.this.font.width(state);
-			context.drawTextWithShadow(BlockLockScreen.this.font, state,
+			Draw.text(context, BlockLockScreen.this.font, state,
 					x + width - stateWidth - 6, y + 8, 0xFFFFFFFF);
 		}
 

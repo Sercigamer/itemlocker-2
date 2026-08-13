@@ -33,13 +33,15 @@ public final class ItemLockerKeybinds {
 	 * der schliessende Chat wuerde ihn sofort wieder wegraeumen. Also merken und
 	 * im naechsten Tick oeffnen, wenn kein anderer Screen offen ist.
 	 */
-	private static boolean configScreenRequested;
+	private static int configScreenDelay;
 
 	private ItemLockerKeybinds() {
 	}
 
 	public static void requestConfigScreen() {
-		configScreenRequested = true;
+		// Zwei Ticks warten, bis der Chat geschlossen ist - ab 26.x gibt es
+		// keinen oeffentlichen Zugriff mehr auf den offenen Screen.
+		configScreenDelay = 2;
 	}
 
 	public static void register() {
@@ -63,9 +65,8 @@ public final class ItemLockerKeybinds {
 			requestConfigScreen();
 		}
 
-		if (configScreenRequested && client.screen == null) {
-			configScreenRequested = false;
-			client.setScreen(new ItemLockerConfigScreen(null));
+		if (configScreenDelay > 0 && --configScreenDelay == 0) {
+			client.setScreenAndShow(new ItemLockerConfigScreen(null));
 		}
 
 		LocalPlayer player = client.player;

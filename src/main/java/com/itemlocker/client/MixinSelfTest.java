@@ -27,14 +27,13 @@ public final class MixinSelfTest {
 			return;
 		}
 
-		check("net.minecraft.class_746", "itemlocker$guardHotbarDrop");
-		check("net.minecraft.class_636", "itemlocker$guardSlotClick");
-		check("net.minecraft.class_481", "itemlocker$guardCreativeClick");
-		check("net.minecraft.class_465", "itemlocker$drawLockIcon");
-		check("net.minecraft.class_636", "itemlocker$guardEntityUseAtLocation");
-		check("net.minecraft.class_636", "itemlocker$guardEntityUse");
-		check("net.minecraft.class_636", "itemlocker$guardBlockUse");
-		check("net.minecraft.class_8673", "itemlocker$guardOffhandSwap");
+		check("net.minecraft.client.player.LocalPlayer", "itemlocker$guardHotbarDrop");
+		check("net.minecraft.client.multiplayer.MultiPlayerGameMode", "itemlocker$guardSlotClick");
+		check("net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen", "itemlocker$guardCreativeClick");
+		check("net.minecraft.client.gui.screens.inventory.AbstractContainerScreen", "itemlocker$drawLockIcon");
+		check("net.minecraft.client.multiplayer.MultiPlayerGameMode", "itemlocker$guardEntityUseAtLocation");
+		check("net.minecraft.client.multiplayer.MultiPlayerGameMode", "itemlocker$guardBlockUse");
+		check("net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl", "itemlocker$guardOffhandSwap");
 	}
 
 	private static void check(String intermediaryName, String injectedMethod) {

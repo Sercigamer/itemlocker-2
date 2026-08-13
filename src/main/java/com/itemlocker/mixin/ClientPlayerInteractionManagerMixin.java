@@ -39,7 +39,7 @@ public abstract class ClientPlayerInteractionManagerMixin {
 	 * Variante mit Trefferpunkt und faellt dann auf die einfache zurueck -
 	 * deshalb muessen beide abgesichert sein.
 	 */
-	@Inject(method = "interactEntityAtLocation", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "interact", at = @At("HEAD"), cancellable = true)
 	private void itemlocker$guardEntityUseAtLocation(Player player, Entity entity, EntityHitResult hitResult,
 			InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
 		if (PlacementGuard.blockArmorStandEquip(player, entity, hand)) {
@@ -47,13 +47,6 @@ public abstract class ClientPlayerInteractionManagerMixin {
 		}
 	}
 
-	@Inject(method = "interactEntity", at = @At("HEAD"), cancellable = true)
-	private void itemlocker$guardEntityUse(Player player, Entity entity, InteractionHand hand,
-			CallbackInfoReturnable<InteractionResult> cir) {
-		if (PlacementGuard.blockArmorStandEquip(player, entity, hand)) {
-			cir.setReturnValue(InteractionResult.FAIL);
-		}
-	}
 
 	/** Deko-Toepfe und gesperrte Block-Oberflaechen. */
 	@Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)

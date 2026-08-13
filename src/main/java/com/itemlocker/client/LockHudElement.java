@@ -28,7 +28,7 @@ public final class LockHudElement implements HudElement {
 	private static final int COLOR_PROGRESS_FG = 0xFFFFAA00;
 
 	@Override
-	public void render(GuiGraphicsExtractor context, DeltaTracker tickCounter) {
+	public void extractRenderState(GuiGraphicsExtractor context, DeltaTracker tickCounter) {
 		LockerConfig config = ConfigManager.get();
 
 		if (!config.enabled || !config.showHudIcons) {
@@ -70,25 +70,25 @@ public final class LockHudElement implements HudElement {
 	/** Winziges 6x7-Schloss aus Rechtecken - kein Texture-Asset noetig. */
 	private void drawPadlock(GuiGraphicsExtractor context, int x, int y, int color) {
 		// Schatten/Umriss, damit das Schloss auf hellen Items lesbar bleibt.
-		extractor.fill(x - 1, y - 1, x + 7, y + 8, COLOR_OUTLINE);
+		context.fill(x - 1, y - 1, x + 7, y + 8, COLOR_OUTLINE);
 
 		// Buegel
-		extractor.fill(x + 1, y, x + 5, y + 1, color);
-		extractor.fill(x, y + 1, x + 1, y + 3, color);
-		extractor.fill(x + 5, y + 1, x + 6, y + 3, color);
+		context.fill(x + 1, y, x + 5, y + 1, color);
+		context.fill(x, y + 1, x + 1, y + 3, color);
+		context.fill(x + 5, y + 1, x + 6, y + 3, color);
 
 		// Koerper
-		extractor.fill(x, y + 3, x + 6, y + 7, color);
+		context.fill(x, y + 3, x + 6, y + 7, color);
 
 		// Schluesselloch
-		extractor.fill(x + 2, y + 4, x + 4, y + 6, COLOR_OUTLINE);
+		context.fill(x + 2, y + 4, x + 4, y + 6, COLOR_OUTLINE);
 	}
 
 	private void drawProgress(GuiGraphicsExtractor context, int slotLeft, int y, int attempts, int required) {
 		int width = 16;
 		int done = Math.min(width, Math.round(width * (attempts / (float) Math.max(1, required))));
 
-		extractor.fill(slotLeft, y, slotLeft + width, y + 2, COLOR_PROGRESS_BG);
-		extractor.fill(slotLeft, y, slotLeft + done, y + 2, COLOR_PROGRESS_FG);
+		context.fill(slotLeft, y, slotLeft + width, y + 2, COLOR_PROGRESS_BG);
+		context.fill(slotLeft, y, slotLeft + done, y + 2, COLOR_PROGRESS_FG);
 	}
 }

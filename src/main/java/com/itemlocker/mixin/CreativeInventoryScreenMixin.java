@@ -22,7 +22,7 @@ import net.minecraft.world.inventory.ContainerInput;
  */
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeInventoryScreenMixin {
-	@Inject(method = "onMouseClick", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
 	private void itemlocker$guardCreativeClick(Slot slot, int slotId, int button, ContainerInput actionType,
 			CallbackInfo ci) {
 		if (DropGuard.blockCreativeScreenClick(slot, actionType, Minecraft.getInstance().player)) {

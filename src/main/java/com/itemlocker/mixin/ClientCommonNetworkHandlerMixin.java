@@ -23,7 +23,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
  */
 @Mixin(ClientCommonPacketListenerImpl.class)
 public abstract class ClientCommonNetworkHandlerMixin {
-	@Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "send", at = @At("HEAD"), cancellable = true)
 	private void itemlocker$guardOffhandSwap(Packet<?> packet, CallbackInfo ci) {
 		if (!(packet instanceof ServerboundPlayerActionPacket action)
 				|| action.getAction() != ServerboundPlayerActionPacket.Action.SWAP_ITEM_WITH_OFFHAND) {

@@ -147,7 +147,7 @@ public final class PlacementGuard {
 		}
 
 		Minecraft client = Minecraft.getInstance();
-		return client.options != null && client.options.sneakKey.isDown();
+		return client.options != null && client.options.keyShift.isDown();
 	}
 
 	public static boolean isBlockLocked(Block block) {

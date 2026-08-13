@@ -1,5 +1,7 @@
 package com.itemlocker.client.screen;
 
+import com.itemlocker.client.Draw;
+
 import com.itemlocker.config.ConfigManager;
 import com.itemlocker.lock.DropGuard;
 import com.itemlocker.lock.LockManager;
@@ -65,16 +67,16 @@ public class SlotLockScreen extends Screen {
 				})
 				.bounds(centerX + 5, this.height - 56, 150, 20).build());
 
-		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> this.close())
+		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> this.onClose())
 				.bounds(centerX - 100, this.height - 30, 200, 20).build());
 	}
 
 	@Override
-	public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-		super.render(context, mouseX, mouseY, deltaTicks);
+	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+		super.extractRenderState(context, mouseX, mouseY, deltaTicks);
 
-		context.drawCenteredTextWithShadow(this.font, this.title, this.width / 2, 20, 0xFFFFFFFF);
-		context.drawCenteredTextWithShadow(this.font,
+		Draw.centered(context, this.font, this.title, this.width / 2, 20, 0xFFFFFFFF);
+		Draw.centered(context, this.font,
 				Component.translatable("itemlocker.config.slots.hint").withStyle(ChatFormatting.GRAY),
 				this.width / 2, 36, 0xFFAAAAAA);
 
@@ -87,10 +89,10 @@ public class SlotLockScreen extends Screen {
 			boolean locked = LockManager.isSlotLocked(slot);
 			boolean hovered = mouseX >= x && mouseX < x + CELL_SIZE && mouseY >= top && mouseY < top + CELL_SIZE;
 
-			extractor.fill(x, top, x + CELL_SIZE, top + CELL_SIZE, locked ? COLOR_CELL_LOCKED : COLOR_CELL);
+			context.fill(x, top, x + CELL_SIZE, top + CELL_SIZE, locked ? COLOR_CELL_LOCKED : COLOR_CELL);
 
 			if (hovered) {
-				extractor.fill(x, top, x + CELL_SIZE, top + CELL_SIZE, COLOR_CELL_HOVER);
+				context.fill(x, top, x + CELL_SIZE, top + CELL_SIZE, COLOR_CELL_HOVER);
 			}
 
 			if (locked) {
@@ -107,16 +109,16 @@ public class SlotLockScreen extends Screen {
 
 			Component label = Component.literal(String.valueOf(slot + 1))
 					.withStyle(locked ? ChatFormatting.RED : ChatFormatting.GRAY);
-			context.drawCenteredTextWithShadow(this.font, label, x + CELL_SIZE / 2, top + CELL_SIZE + 5,
+			Draw.centered(context, this.font, label, x + CELL_SIZE / 2, top + CELL_SIZE + 5,
 					0xFFFFFFFF);
 		}
 	}
 
 	private void drawBorder(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
-		extractor.fill(x, y, x + width, y + 1, color);
-		extractor.fill(x, y + height - 1, x + width, y + height, color);
-		extractor.fill(x, y, x + 1, y + height, color);
-		extractor.fill(x + width - 1, y, x + width, y + height, color);
+		context.fill(x, y, x + width, y + 1, color);
+		context.fill(x, y + height - 1, x + width, y + height, color);
+		context.fill(x, y, x + 1, y + height, color);
+		context.fill(x + width - 1, y, x + width, y + height, color);
 	}
 
 	@Override
@@ -140,8 +142,8 @@ public class SlotLockScreen extends Screen {
 	}
 
 	@Override
-	public void close() {
+	public void onClose() {
 		ConfigManager.save();
-		this.minecraft.setScreen(this.parent);
+		this.minecraft.setScreenAndShow(this.parent);
 	}
 }

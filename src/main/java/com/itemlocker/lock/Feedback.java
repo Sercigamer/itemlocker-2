@@ -27,12 +27,12 @@ public final class Feedback {
 		}
 
 		if (config.actionBarMessages) {
-			player.displayClientMessage(Component.translatable(
+			overlay(Component.translatable(
 					"itemlocker.message.blocked",
 					stack.getHoverName().copy().withStyle(ChatFormatting.WHITE),
 					Component.literal(String.valueOf(remaining)).withStyle(ChatFormatting.YELLOW),
 					Component.literal(String.valueOf(required)).withStyle(ChatFormatting.GRAY))
-					.withStyle(ChatFormatting.RED), true);
+					.withStyle(ChatFormatting.RED));
 		}
 
 		if (config.playSound) {
@@ -49,10 +49,10 @@ public final class Feedback {
 		}
 
 		if (config.actionBarMessages) {
-			player.displayClientMessage(Component.translatable(
+			overlay(Component.translatable(
 					"itemlocker.message.released",
 					stack.getHoverName().copy().withStyle(ChatFormatting.WHITE))
-					.withStyle(ChatFormatting.GREEN), true);
+					.withStyle(ChatFormatting.GREEN));
 		}
 
 		if (config.playSound) {
@@ -69,8 +69,8 @@ public final class Feedback {
 		}
 
 		if (config.actionBarMessages) {
-			player.displayClientMessage(Component.translatable("itemlocker.message.armor_stand",
-					stack.getHoverName().copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.RED), true);
+			overlay(Component.translatable("itemlocker.message.armor_stand",
+					stack.getHoverName().copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.RED));
 		}
 
 		if (config.playSound) {
@@ -103,7 +103,7 @@ public final class Feedback {
 		}
 
 		if (config.actionBarMessages) {
-			player.displayClientMessage(message.copy().withStyle(ChatFormatting.RED), true);
+			overlay(message.copy().withStyle(ChatFormatting.RED));
 		}
 
 		if (config.playSound) {
@@ -120,8 +120,8 @@ public final class Feedback {
 		}
 
 		if (config.actionBarMessages) {
-			player.displayClientMessage(Component.translatable("itemlocker.message.frozen", hotbarSlot + 1)
-					.withStyle(ChatFormatting.RED), true);
+			overlay(Component.translatable("itemlocker.message.frozen", hotbarSlot + 1)
+					.withStyle(ChatFormatting.RED));
 		}
 
 		if (config.playSound) {
@@ -133,13 +133,18 @@ public final class Feedback {
 		LocalPlayer player = Minecraft.getInstance().player;
 
 		if (player != null) {
-			player.displayClientMessage(text, false);
+			player.sendSystemMessage(text);
 		}
+	}
+
+	/** Actionbar: laeuft ab 26.x ueber die Hud-Instanz, nicht mehr ueber den Spieler. */
+	private static void overlay(Component message) {
+		Minecraft.getInstance().gui.hud.setOverlayMessage(message, false);
 	}
 
 	private static void playSound(float pitch) {
 		Minecraft client = Minecraft.getInstance();
 		client.getSoundManager().play(
-				SimpleSoundInstance.ui(SoundEvents.BLOCK_NOTE_BLOCK_HAT, Math.min(2.0F, Math.max(0.5F, pitch))));
+				SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HAT, Math.min(2.0F, Math.max(0.5F, pitch))));
 	}
 }

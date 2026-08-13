@@ -65,7 +65,7 @@ public final class DropGuard {
 		}
 
 		// Stack am Cursor ausserhalb des Fensters fallen lassen.
-		if (slotId == AbstractContainerMenu.EMPTY_SPACE_SLOT_INDEX
+		if (slotId == AbstractContainerMenu.SLOT_CLICKED_OUTSIDE
 				&& (actionType == ContainerInput.PICKUP || actionType == ContainerInput.THROW)) {
 			return blockDrop(CONTEXT_CURSOR, -1, handler.getCarried());
 		}
@@ -101,7 +101,7 @@ public final class DropGuard {
 
 		// Der zweite Weg in die Zweithand: Zweithand-Taste im offenen Inventar.
 		if (actionType == ContainerInput.SWAP
-				&& button == Inventory.OFF_HAND_SLOT
+				&& button == Inventory.SLOT_OFFHAND
 				&& config.preventOffhandSwap
 				&& (LockManager.isItemLocked(stack) || LockManager.isItemLocked(player.getOffhandItem()))) {
 			Feedback.offhandBlocked();
