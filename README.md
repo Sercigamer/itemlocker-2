@@ -8,7 +8,7 @@ Eine clientseitige Fabric-Mod, die deine wichtigsten Items festhält:
 gesperrte Sachen fallen erst, wenn du die Drop-Taste **mehrfach hintereinander** drückst.
 
 [![Build](https://github.com/Sercigamer/itemlocker-2/actions/workflows/build.yml/badge.svg)](https://github.com/Sercigamer/itemlocker-2/actions/workflows/build.yml)
-![Minecraft](https://img.shields.io/badge/Minecraft-26.2-brightgreen)
+![Minecraft](https://img.shields.io/badge/Minecraft-26.1-brightgreen)
 ![Loader](https://img.shields.io/badge/Loader-Fabric-dbd0b4)
 ![Seite](https://img.shields.io/badge/Seite-nur%20Client-blue)
 ![Lizenz](https://img.shields.io/badge/Lizenz-MIT-lightgrey)
@@ -49,13 +49,13 @@ Dazu kommen harte Sperren für Wege, auf denen ein Item ohne Drop verschwindet: 
 
 ## Installation
 
-Du brauchst immer: **Minecraft 26.2**, **Fabric Loader**, **Fabric API** und **Java 25+**.
+Du brauchst immer: **Minecraft 26.1**, **Fabric Loader**, **Fabric API** und **Java 25+**.
 
 ### Normaler Fabric-Launcher
 
-1. [Fabric Loader](https://fabricmc.net/use/installer/) für 26.2 installieren
-2. [Fabric API](https://modrinth.com/mod/fabric-api) für 26.2 in den `mods`-Ordner
-3. `itemlocker-2.0.1+26.2.jar` daneben legen
+1. [Fabric Loader](https://fabricmc.net/use/installer/) für 26.1 installieren
+2. [Fabric API](https://modrinth.com/mod/fabric-api) für 26.1 in den `mods`-Ordner
+3. `itemlocker-2.0.0+26.1.jar` daneben legen
 4. *Optional:* [Mod Menu](https://modrinth.com/mod/modmenu) für den Zahnrad-Knopf im Mod-Menü
 
 Der `mods`-Ordner liegt unter `%APPDATA%\.minecraft\mods` (Windows) bzw. `~/.minecraft/mods` (Linux) oder `~/Library/Application Support/minecraft/mods` (macOS).
@@ -65,7 +65,7 @@ Der `mods`-Ordner liegt unter `%APPDATA%\.minecraft\mods` (Windows) bzw. `~/.min
 Lunar hat einen eigenen Ordner pro Version:
 
 ```
-%USERPROFILE%\.lunarclient\mods\26.2
+%USERPROFILE%\.lunarclient\mods\26.1
 ```
 
 Dort **beide** Jars ablegen — `itemlocker-*.jar` **und** `fabric-api-*.jar`. Danach Lunar neu starten und die Mod unter *Settings → Mods* aktivieren.
@@ -74,7 +74,7 @@ Dort **beide** Jars ablegen — `itemlocker-*.jar` **und** `fabric-api-*.jar`. D
 
 ### Prism / MultiMC / ATLauncher
 
-Instanz mit Fabric für 26.2 anlegen, dann beide Jars über *Mods hinzufügen* einbinden.
+Instanz mit Fabric für 26.1 anlegen, dann beide Jars über *Mods hinzufügen* einbinden.
 
 ---
 
@@ -339,7 +339,7 @@ Das heißt auch: **Die Mod funktioniert auf jedem Server**, auch auf Vanilla-Ser
 
 | | Status |
 | --- | --- |
-| Minecraft | 26.2 |
+| Minecraft | 26.1 |
 | Fabric Loader | 0.16.0 oder neuer |
 | Fabric API | erforderlich |
 | Java | 25 oder neuer |
@@ -389,11 +389,11 @@ Du brauchst **JDK 25**. Fehlt es, lädt Gradle es automatisch nach.
 ./gradlew build
 ```
 
-Das fertige Jar liegt unter `build/libs/itemlocker-2.0.1+26.2.jar` — der Teil hinter dem Plus ist die Minecraft-Version. Die Datei mit `-sources` im Namen wird zum Spielen nicht gebraucht.
+Das fertige Jar liegt unter `build/libs/itemlocker-2.0.0+26.1.jar` — der Teil hinter dem Plus ist die Minecraft-Version. Die Datei mit `-sources` im Namen wird zum Spielen nicht gebraucht.
 
 ### Ein Handgriff vor dem ersten `runClient`
 
-Leg eine **unveränderte Fabric-API-Jar für 26.2** in den Ordner `run/mods`. Ohne sie startet der Entwicklungs-Client nicht.
+Leg eine **unveränderte Fabric-API-Jar für 26.1** in den Ordner `run/mods`. Ohne sie startet der Entwicklungs-Client nicht.
 
 Der Grund: Ab 26.x ist Minecraft unverschleiert, es gibt also keine Übersetzungsebene mehr. Loom schreibt eingebundene Mods trotzdem auf den Namensraum `named` um — den der Loader dort nicht kennt, weil er auf `official` läuft. Er bricht dann beim Lesen der Class-Tweaker ab:
 
