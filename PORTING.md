@@ -71,25 +71,33 @@ Unverändert: `Screen`, `Slot`, `ItemStack`, `Block`, `Blocks`, `Items`,
 | Kreativ-Drop | `CreativeInventoryScreen.onMouseClick` | `AbstractContainerScreen.slotClicked(Slot,int,int,ContainerInput)` bzw. `MultiPlayerGameMode.handleCreativeModeItemDrop(ItemStack)` |
 | Zweithand | `ClientCommonNetworkHandler.sendPacket` | vermutlich unverändert, noch zu prüfen |
 
-## Der eigentliche Aufwand: die Oberfläche
+## Die Render-Schicht
 
-Die Schutzlogik ist reine Umbenennungsarbeit. **Die Render-Schicht ist es
-nicht.** In 26.x wurde die GUI-Ausgabe grundlegend umgebaut:
+In 26.x wurde die GUI-Ausgabe umgebaut: Statt direkt zu zeichnen, füllt man
+in einem Extraktions-Schritt einen `GuiGraphicsExtractor`. **Alle von uns
+benötigten Bausteine existieren weiterhin**, nur unter anderen Namen — die
+Übersetzung ist mechanisch.
 
-- `GuiGraphics` (bei uns `DrawContext`) existiert nicht mehr
-- Stattdessen `GuiGraphicsExtractor` mit einem Extraktions-Schritt vor dem
-  Zeichnen: `AbstractContainerScreen.extractSlots(GuiGraphicsExtractor,int,int)`
-- Ein `drawSlot`/`renderSlot` gibt es nicht mehr — der Einhängepunkt für die
-  Schloss-Symbole im Inventar fällt damit weg
-- Die Fabric-HUD-API dürfte entsprechend anders aussehen
+| 1.21.11 | 26.2 |
+| --- | --- |
+| `Screen.render(DrawContext, mouseX, mouseY, delta)` | `Screen.extractRenderState(GuiGraphicsExtractor, mouseX, mouseY, partialTick)` |
+| `AbstractWidget.renderWidget(…)` | `extractWidgetRenderState(GuiGraphicsExtractor, int, int, float)` |
+| `EntryListWidget.Entry.render(DrawContext, …, hovered, delta)` | `AbstractSelectionList.Entry.extractContent(GuiGraphicsExtractor, mouseX, mouseY, hovered, partialTick)` |
+| `context.fill(x1,y1,x2,y2,argb)` | `extractor.fill(x1,y1,x2,y2,argb)` — unverändert |
+| `context.drawItem(stack,x,y)` | `extractor.item(stack,x,y)` |
+| `context.drawTextWithShadow(font,text,x,y,color)` | `extractor.text(font, component, x, y, color, true)` |
+| `context.drawCenteredTextWithShadow(…)` | `extractor.text(…)`, Zentrierung selbst rechnen |
+| `TextRenderer` | `client.gui.Font` |
 
-Betroffen sind: `LockIcon`, `LockHudElement`, `HandledScreenMixin` und alle
-vier Config-Bildschirme.
+Für die Schlösser im Inventar gibt es kein `drawSlot` mehr. Ersatz:
+`AbstractContainerScreen.extractSlots(GuiGraphicsExtractor,int,int)` am Ende
+anhängen und über `menu.slots` selbst zeichnen — `Slot.x`/`Slot.y` liefern
+weiterhin die Position.
 
-## Vorschlag für die Reihenfolge
+Offen zu prüfen: die Fabric-HUD-API für 26.x (`HudElementRegistry`).
 
-1. **Schutzlogik portieren** — Mixins, Guards, Config, Befehle, Tasten.
-   Das ist der Kern und reine Umbenennung.
-2. **Ohne Oberfläche veröffentlichen** — Bedienung über `/itemlocker` und
-   die Tasten. Damit ist 26.x nutzbar.
-3. **Oberfläche nachziehen**, sobald die neue Render-API verstanden ist.
+## Reihenfolge
+
+1. Schutzlogik: Mixins, Guards, Config, Befehle, Tasten
+2. Oberfläche: vier Bildschirme, HUD- und Inventar-Schlösser
+3. Bauen, im Dev-Client prüfen, veröffentlichen — erst 26.2, dann 26.1
