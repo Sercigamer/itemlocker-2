@@ -2,6 +2,18 @@
 
 Alle nennenswerten Änderungen an ItemLocker.
 
+## [2.0.2]
+
+### Behoben
+
+- Beim Betreten einer Welt meldete Brigadier zwei Mehrdeutigkeiten: `/itemlocker item lock` und `/itemlocker item <id>` waren nicht unterscheidbar, weil das ID-Argument jede Eingabe schluckte - auch `lock` und `unlock`. Der Befehl tat zwar das Richtige, aber es standen zwei Warnungen im Log.
+
+### Geändert
+
+- Die ID-Argumente von `/itemlocker item` und `/itemlocker block` nehmen jetzt nur noch IDs an, die es in der Registry wirklich gibt. Damit ist die Ueberschneidung strukturell weg - und Tippfehler werden schon beim Eintippen rot markiert statt erst nach dem Absenden.
+
+Ansonsten unveraendert gegenueber der vorherigen Fassung fuer Minecraft 26.1.
+
 ## [2.0.0]
 
 Erste Fassung fuer die neue Minecraft-Reihe: voller Funktionsumfang wie in 1.4.1, portiert auf **Minecraft 26.1**.

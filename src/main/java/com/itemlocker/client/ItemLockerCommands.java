@@ -65,8 +65,7 @@ public final class ItemLockerCommands {
 							.executes(ctx -> toggleHeldItem(ctx, null))
 							.then(literal("lock").executes(ctx -> toggleHeldItem(ctx, Boolean.TRUE)))
 							.then(literal("unlock").executes(ctx -> toggleHeldItem(ctx, Boolean.FALSE)))
-							.then(argument("id", StringArgumentType.greedyString())
-									.suggests(ItemLockerCommands::suggestItems)
+							.then(argument("id", RegistryIdArgumentType.of(BuiltInRegistries.ITEM))
 									.executes(ItemLockerCommands::toggleItemById)))
 					.then(literal("hud")
 							.then(argument("value", BoolArgumentType.bool()).executes(ctx -> {
@@ -110,8 +109,7 @@ public final class ItemLockerCommands {
 							})))
 					.then(literal("block")
 							.executes(ItemLockerCommands::toggleLookedAtBlock)
-							.then(argument("id", StringArgumentType.greedyString())
-									.suggests(ItemLockerCommands::suggestBlocks)
+							.then(argument("id", RegistryIdArgumentType.of(BuiltInRegistries.BLOCK))
 									.executes(ItemLockerCommands::toggleBlockById)))
 					.then(literal("armorstands")
 							.then(argument("value", BoolArgumentType.bool()).executes(ctx -> {
@@ -282,15 +280,7 @@ public final class ItemLockerCommands {
 	}
 
 	private static int toggleItemById(CommandContext<FabricClientCommandSource> ctx) {
-		String raw = StringArgumentType.getString(ctx, "id").trim().toLowerCase(Locale.ROOT);
-		Identifier id = Identifier.tryParse(raw);
-
-		if (id == null || !BuiltInRegistries.ITEM.keySet().contains(id)) {
-			ctx.getSource().sendError(Component.translatable("itemlocker.command.unknown_item", raw));
-			return 0;
-		}
-
-		return applyItemLock(ctx, id.toString(), null);
+		return applyItemLock(ctx, RegistryIdArgumentType.get(ctx, "id"), null);
 	}
 
 	private static int applyItemLock(CommandContext<FabricClientCommandSource> ctx, String itemId, Boolean forced) {
@@ -333,15 +323,8 @@ public final class ItemLockerCommands {
 	}
 
 	private static int toggleBlockById(CommandContext<FabricClientCommandSource> ctx) {
-		String raw = StringArgumentType.getString(ctx, "id").trim().toLowerCase(Locale.ROOT);
-		Identifier id = Identifier.tryParse(raw);
-
-		if (id == null || !BuiltInRegistries.BLOCK.keySet().contains(id)) {
-			ctx.getSource().sendError(Component.translatable("itemlocker.command.unknown_block", raw));
-			return 0;
-		}
-
-		return applyBlockLock(ctx, id.toString(), Component.literal(id.toString()));
+		String id = RegistryIdArgumentType.get(ctx, "id");
+		return applyBlockLock(ctx, id, Component.literal(id));
 	}
 
 	private static int applyBlockLock(CommandContext<FabricClientCommandSource> ctx, String blockId, Component name) {
@@ -362,36 +345,6 @@ public final class ItemLockerCommands {
 				: "itemlocker.message.block_unlocked", name.copy().withStyle(ChatFormatting.WHITE), blockId)
 				.withStyle(locked ? ChatFormatting.RED : ChatFormatting.GREEN));
 		return 1;
-	}
-
-	private static java.util.concurrent.CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestBlocks(
-			CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder) {
-		String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
-
-		for (Identifier id : BuiltInRegistries.BLOCK.keySet()) {
-			String full = id.toString();
-
-			if (full.startsWith(remaining) || id.getPath().startsWith(remaining)) {
-				builder.suggest(full);
-			}
-		}
-
-		return builder.buildFuture();
-	}
-
-	private static java.util.concurrent.CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestItems(
-			CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder) {
-		String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
-
-		for (Identifier id : BuiltInRegistries.ITEM.keySet()) {
-			String full = id.toString();
-
-			if (full.startsWith(remaining) || id.getPath().startsWith(remaining)) {
-				builder.suggest(full);
-			}
-		}
-
-		return builder.buildFuture();
 	}
 
 	private static int saveAndReport(CommandContext<FabricClientCommandSource> ctx, String key, boolean value) {

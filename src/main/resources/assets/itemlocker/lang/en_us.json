@@ -88,6 +88,7 @@
 	"itemlocker.command.offhand": "Off-hand protection: %s",
 	"itemlocker.command.sneakbypass": "Sneaking bypasses block lock: %s",
 	"itemlocker.command.no_block": "You are not looking at a block",
+	"itemlocker.command.unknown_entry": "Unknown entry: %s",
 	"itemlocker.command.unknown_block": "Unknown block: %s",
 
 	"itemlocker.help.config": "/itemlocker config - open the settings menu",
