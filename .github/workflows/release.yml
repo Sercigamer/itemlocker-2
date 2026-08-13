@@ -40,11 +40,16 @@ jobs:
           fi
           echo "MOD_VERSION=$VERSION" >> "$GITHUB_ENV"
 
-      - name: Set up JDK 21
+      - name: Java-Version aus gradle.properties lesen
+        run: |
+          JV=$(grep -E '^java_version=' gradle.properties | cut -d= -f2- | tr -d '[:space:]')
+          echo "JAVA_VERSION=${JV:-21}" >> "$GITHUB_ENV"
+
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: ${{ env.JAVA_VERSION }}
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
