@@ -125,6 +125,28 @@ public class ItemLockScreen extends Screen {
 		refreshList();
 	}
 
+	/**
+	 * Anzeigename ohne ItemStack. Ausserhalb einer Welt sind die
+	 * Item-Bestandteile nicht gebunden - dann bleibt nur der Pfad der ID.
+	 */
+	private static String displayName(Item item, String id) {
+		try {
+			return Component.translatable(item.getDescriptionId()).getString();
+		} catch (Throwable ignored) {
+			int colon = id.indexOf(':');
+			return colon < 0 ? id : id.substring(colon + 1);
+		}
+	}
+
+	/** Symbol nur zeichnen, wenn sich ueberhaupt ein Stapel bauen laesst. */
+	private static ItemStack safeStack(Item item) {
+		try {
+			return new ItemStack(item);
+		} catch (Throwable ignored) {
+			return null;
+		}
+	}
+
 	private void refreshList() {
 		if (this.itemList == null) {
 			return;
@@ -138,9 +160,8 @@ public class ItemLockScreen extends Screen {
 				continue;
 			}
 
-			ItemStack stack = new ItemStack(item);
-			String id = LockManager.itemId(stack);
-			String name = stack.getHoverName().getString();
+			String id = BuiltInRegistries.ITEM.getKey(item).toString();
+			String name = displayName(item, id);
 
 			if (!query.isEmpty()
 					&& !id.toLowerCase(Locale.ROOT).contains(query)
@@ -148,17 +169,17 @@ public class ItemLockScreen extends Screen {
 				continue;
 			}
 
-			if (filter == Filter.LOCKED && !LockManager.isItemLocked(stack)) {
+			if (filter == Filter.LOCKED && !LockManager.isItemIdLocked(id)) {
 				continue;
 			}
 
-			entries.add(new ItemEntry(stack, id, name));
+			entries.add(new ItemEntry(item, id, name));
 		}
 
 		// Gesperrte nach oben, sonst alphabetisch.
 		entries.sort((a, b) -> {
-			boolean lockedA = LockManager.isItemLocked(a.stack);
-			boolean lockedB = LockManager.isItemLocked(b.stack);
+			boolean lockedA = LockManager.isItemIdLocked(a.id);
+			boolean lockedB = LockManager.isItemIdLocked(b.id);
 
 			if (lockedA != lockedB) {
 				return lockedA ? -1 : 1;
@@ -227,12 +248,12 @@ public class ItemLockScreen extends Screen {
 
 	/** Eine Zeile: Icon, Name, Registry-ID und Schloss-Status. */
 	private class ItemEntry extends ObjectSelectionList.Entry<ItemEntry> {
-		private final ItemStack stack;
+		private final Item item;
 		private final String id;
 		private final String name;
 
-		ItemEntry(ItemStack stack, String id, String name) {
-			this.stack = stack;
+		ItemEntry(Item item, String id, String name) {
+			this.item = item;
 			this.id = id;
 			this.name = name;
 		}
@@ -247,7 +268,7 @@ public class ItemLockScreen extends Screen {
 			int x = getContentX();
 			int y = getContentY();
 			int width = getContentWidth();
-			boolean locked = LockManager.isItemLocked(stack);
+			boolean locked = LockManager.isItemIdLocked(id);
 
 			if (locked) {
 				context.fill(x, y, x + width, y + getContentHeight() - 2, 0x40FF5555);
@@ -255,7 +276,11 @@ public class ItemLockScreen extends Screen {
 				context.fill(x, y, x + width, y + getContentHeight() - 2, 0x30FFFFFF);
 			}
 
-			context.item(stack, x + 4, y + 3);
+			ItemStack icon = safeStack(item);
+
+			if (icon != null) {
+				context.item(icon, x + 4, y + 3);
+			}
 
 			Draw.text(context, ItemLockScreen.this.font,
 					Component.literal(name).withStyle(locked ? ChatFormatting.RED : ChatFormatting.WHITE),

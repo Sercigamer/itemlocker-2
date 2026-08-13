@@ -128,6 +128,24 @@ public class BlockLockScreen extends Screen {
 		refreshList();
 	}
 
+	/** Anzeigename ohne Stapel - ausserhalb einer Welt bleibt nur die ID. */
+	private static String displayName(Block block, String id) {
+		try {
+			return Component.translatable(block.getDescriptionId()).getString();
+		} catch (Throwable ignored) {
+			int colon = id.indexOf(':');
+			return colon < 0 ? id : id.substring(colon + 1);
+		}
+	}
+
+	private static ItemStack safeStack(Block block) {
+		try {
+			return new ItemStack(block);
+		} catch (Throwable ignored) {
+			return null;
+		}
+	}
+
 	private void refreshList() {
 		if (this.blockList == null) {
 			return;
@@ -142,7 +160,7 @@ public class BlockLockScreen extends Screen {
 			}
 
 			String id = PlacementGuard.blockId(block);
-			String name = block.getName().getString();
+			String name = displayName(block, id);
 
 			if (!query.isEmpty()
 					&& !id.toLowerCase(Locale.ROOT).contains(query)
@@ -211,7 +229,7 @@ public class BlockLockScreen extends Screen {
 			this.block = block;
 			this.id = id;
 			this.name = name;
-			this.icon = new ItemStack(block);
+			this.icon = safeStack(block);
 		}
 
 		@Override
@@ -232,7 +250,7 @@ public class BlockLockScreen extends Screen {
 				context.fill(x, y, x + width, y + getContentHeight() - 2, 0x30FFFFFF);
 			}
 
-			if (!icon.isEmpty()) {
+			if (icon != null && !icon.isEmpty()) {
 				context.item(icon, x + 4, y + 3);
 			}
 

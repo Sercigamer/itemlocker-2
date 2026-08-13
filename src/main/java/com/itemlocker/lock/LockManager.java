@@ -29,6 +29,17 @@ public final class LockManager {
 		return isValidHotbarSlot(hotbarSlot) && ConfigManager.get().lockedSlots.contains(hotbarSlot);
 	}
 
+	/**
+	 * Wie {@link #isItemLocked(ItemStack)}, nur direkt ueber die ID.
+	 *
+	 * <p>Ab 26.x laesst sich ausserhalb einer Welt kein ItemStack erzeugen -
+	 * die Item-Bestandteile sind dann noch nicht gebunden. Die Auswahl-Listen
+	 * arbeiten deshalb mit IDs statt mit Stapeln.
+	 */
+	public static boolean isItemIdLocked(String itemId) {
+		return ConfigManager.get().lockedItems.contains(itemId);
+	}
+
 	public static boolean isItemLocked(ItemStack stack) {
 		if (stack == null || stack.isEmpty()) {
 			return false;
