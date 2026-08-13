@@ -55,7 +55,7 @@ Du brauchst immer: **Minecraft 1.21.11**, **Fabric Loader**, **Fabric API** und 
 
 1. [Fabric Loader](https://fabricmc.net/use/installer/) für 1.21.11 installieren
 2. [Fabric API](https://modrinth.com/mod/fabric-api) für 1.21.11 in den `mods`-Ordner
-3. `itemlocker-1.4.0.jar` daneben legen
+3. `itemlocker-1.4.1+1.21.11.jar` daneben legen
 4. *Optional:* [Mod Menu](https://modrinth.com/mod/modmenu) für den Zahnrad-Knopf im Mod-Menü
 
 Der `mods`-Ordner liegt unter `%APPDATA%\.minecraft\mods` (Windows) bzw. `~/.minecraft/mods` (Linux) oder `~/Library/Application Support/minecraft/mods` (macOS).
@@ -389,7 +389,7 @@ Du brauchst **JDK 21**. Fehlt es, lädt Gradle es automatisch nach.
 ./gradlew build
 ```
 
-Das fertige Jar liegt unter `build/libs/itemlocker-1.4.0.jar`. Die Datei mit `-sources` im Namen wird zum Spielen nicht gebraucht.
+Das fertige Jar liegt unter `build/libs/itemlocker-1.4.1+1.21.11.jar` — der Teil hinter dem Plus ist die Minecraft-Version. Die Datei mit `-sources` im Namen wird zum Spielen nicht gebraucht.
 
 Entwicklungs-Client mit eingebautem Selbsttest starten:
 

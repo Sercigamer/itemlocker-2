@@ -3,7 +3,10 @@ plugins {
 	id 'maven-publish'
 }
 
-version = project.mod_version
+// Die Minecraft-Version gehoert in den Jar-Namen, sonst weiss beim Herunterladen
+// niemand, wofuer die Datei ist. Alles nach dem Plus ist SemVer-Metadaten -
+// Fabric akzeptiert das und mod_version bleibt fuer den Tag-Vergleich sauber.
+version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
 
 base {

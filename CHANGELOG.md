@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an ItemLocker.
 
+## [1.4.1]
+
+### Geändert
+
+- Der Dateiname des Jars enthält jetzt die Minecraft-Version: `itemlocker-1.4.1+1.21.11.jar`. Beim Herunterladen aus den Releases ist damit sofort erkennbar, für welche Version die Datei gedacht ist.
+
 ## [1.4.0]
 
 ### Neu
