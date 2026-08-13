@@ -2,6 +2,18 @@
 
 Alle nennenswerten Änderungen an ItemLocker.
 
+## [2.0.1]
+
+Dieselbe Fassung wie 2.0.0, gebaut fuer **Minecraft 26.2**.
+
+26.1 und 26.2 unterscheiden sich in einer Kleinigkeit, die genau eine Zeile betrifft: Der Text ueber der Hotbar laeuft in 26.1 ueber `Gui`, in 26.2 ueber `Gui.hud`. Deshalb gibt es je Minecraft-Version einen eigenen Build.
+
+Funktionsumfang, Bedienung und Einstellungen sind identisch zu 2.0.0 - siehe dort fuer die Einzelheiten des Ports.
+
+### Voraussetzungen
+
+Minecraft **26.2**, Fabric Loader, Fabric API und **Java 25**.
+
 ## [1.4.1]
 
 ### Geändert
