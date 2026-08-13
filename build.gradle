@@ -46,15 +46,23 @@ dependencies {
 	// Die Sammel-Abhaengigkeit zieht unter anderem fabric-gametest-api-v1 mit,
 	// dessen Class-Tweaker im Namensraum "named" liegt - bei 26.x laeuft die
 	// Laufzeit aber auf "official", und der Loader bricht deshalb ab.
+	// Nur zum Kompilieren. Zur Laufzeit wird die unveraenderte Fabric API aus
+	// run/mods geladen: Sie liegt bereits im Namensraum "official", genau wie
+	// die Laufzeit bei 26.x. Wuerde Loom sie einbinden, remappte er sie nach
+	// "named" - einen Namensraum, den es in 26.x nicht mehr gibt, woraufhin der
+	// Loader beim Lesen der Class-Tweaker abbricht.
 	Set.of("fabric-command-api-v2", "fabric-key-mapping-api-v1", "fabric-lifecycle-events-v1",
 			"fabric-rendering-v1").each {
-		modImplementation fabricApi.module(it, project.fabric_version)
+		modCompileOnly fabricApi.module(it, project.fabric_version)
 	}
 
 	// Mod Menu ist optional: nur zum Kompilieren und im Dev-Client vorhanden,
 	// wird nicht mitgeliefert und nicht vorausgesetzt.
+	// Nur zum Kompilieren. Im Dev-Client wuerde Loom die von Mod Menu
+	// gebuendelten Fabric-Module nach "named" remappen - denselben Konflikt wie
+	// oben. Zum Testen der Mod-Menu-Anbindung die Jar von Hand nach run/mods
+	// legen.
 	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
-	modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {
