@@ -26,6 +26,10 @@ loom {
 		client {
 			// Prueft beim Start, ob die Mixins wirklich angewendet wurden.
 			property 'itemlocker.selftest', 'true'
+			// Ohne das laeuft der Client im Produktions-Namensraum (official),
+			// waehrend Loom die Mods nach named remappt - der Loader bricht dann
+			// beim Lesen der Class-Tweaker ab.
+			property 'fabric.development', 'true'
 		}
 	}
 }
