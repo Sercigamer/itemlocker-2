@@ -2,6 +2,29 @@
 
 Alle nennenswerten Änderungen an ItemLocker.
 
+## [2.0.0]
+
+Erste Fassung fuer die neue Minecraft-Reihe: voller Funktionsumfang wie in 1.4.1, portiert auf **Minecraft 26.1**.
+
+### Warum der Sprung auf 2.0.0
+
+Ab 26.x liefert Mojang das Spiel unverschleiert aus. Es gibt weder Yarn- noch Mojang-Mappings mehr, weil keine noetig sind - die Klassen heissen im Spiel bereits so, wie sie im Code stehen. Der Port ist damit keine Anpassung, sondern eine Uebersetzung saemtlicher Minecraft-Aufrufe auf Mojangs eigene Namen.
+
+### Was sich intern geaendert hat
+
+- Rund 43 Klassen umbenannt: `ClientPlayerEntity` heisst `LocalPlayer`, `ClientPlayerInteractionManager` heisst `MultiPlayerGameMode`, `HandledScreen` heisst `AbstractContainerScreen`
+- Die Oberflaeche laeuft ueber das neue Extraktions-Modell: statt direkt zu zeichnen, fuellt man einen `GuiGraphicsExtractor`
+- `interactEntity` und `interactEntityAtLocation` waren zwei Einhaengepunkte und sind in 26.x zu einem `interact` zusammengelegt
+- Ein `drawSlot` gibt es nicht mehr; die Schloesser im Inventar laufen jetzt ueber `extractSlots`
+
+### Behoben
+
+- Die Item- und Block-Auswahl stuerzte ausserhalb einer Welt ab (`Components not bound yet`). Ab 26.x lassen sich dort keine Item-Stapel erzeugen - betroffen war jeder, der das Menue ueber Mod Menu im Hauptmenue oeffnet. Die Listen arbeiten jetzt mit Registry-IDs.
+
+### Voraussetzungen
+
+Minecraft **26.1**, Fabric Loader, Fabric API und **Java 25**.
+
 ## [1.4.1]
 
 ### Geändert
