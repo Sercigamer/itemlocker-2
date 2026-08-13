@@ -17,6 +17,20 @@ gesperrte Sachen fallen erst, wenn du die Drop-Taste **mehrfach hintereinander**
 
 ---
 
+> **Welche Version brauche ich?**
+>
+> | Minecraft | Zweig | Neueste Fassung |
+> | --- | --- | --- |
+> | 1.21.11 | `main` (dieser) | 1.4.1 |
+> | 26.1 | [`mc/26.1`](../../tree/mc/26.1) | 2.0.0 |
+> | 26.2 | [`mc/26.2`](../../tree/mc/26.2) | 2.0.1 |
+>
+> Ab 26.x liefert Mojang das Spiel unverschleiert aus. Der Code musste dafür auf
+> Mojangs eigene Klassennamen übersetzt werden — deshalb ein eigener Zweig je
+> Minecraft-Reihe statt eines gemeinsamen Stands.
+
+---
+
 ## Inhalt
 
 - [Das Problem](#das-problem)
