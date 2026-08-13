@@ -139,7 +139,7 @@ public final class Feedback {
 
 	/** Actionbar: laeuft ab 26.x ueber die Hud-Instanz, nicht mehr ueber den Spieler. */
 	private static void overlay(Component message) {
-		Minecraft.getInstance().gui.hud.setOverlayMessage(message, false);
+		Minecraft.getInstance().gui.setOverlayMessage(message, false);
 	}
 
 	private static void playSound(float pitch) {
