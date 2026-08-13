@@ -68,8 +68,8 @@ Unverändert: `Screen`, `Slot`, `ItemStack`, `Block`, `Blocks`, `Items`,
 | Klick im Inventar | `…InteractionManager.clickSlot(int,int,int,SlotActionType,PlayerEntity)` | `MultiPlayerGameMode.handleContainerInput(int,int,int,ContainerInput,Player)` |
 | Block-Rechtsklick | `interactBlock(…)` | `MultiPlayerGameMode.useItemOn(LocalPlayer, InteractionHand, BlockHitResult)` |
 | Entity-Rechtsklick | `interactEntity` **und** `interactEntityAtLocation` | **zusammengelegt** zu `interact(Player, Entity, EntityHitResult, InteractionHand)` |
-| Kreativ-Drop | `CreativeInventoryScreen.onMouseClick` | `AbstractContainerScreen.slotClicked(Slot,int,int,ContainerInput)` bzw. `MultiPlayerGameMode.handleCreativeModeItemDrop(ItemStack)` |
-| Zweithand | `ClientCommonNetworkHandler.sendPacket` | vermutlich unverändert, noch zu prüfen |
+| Kreativ-Drop | `CreativeInventoryScreen.onMouseClick` | `CreativeModeInventoryScreen.slotClicked(Slot,int,int,ContainerInput)` |
+| Zweithand | `ClientCommonNetworkHandler.sendPacket` | `ClientCommonPacketListenerImpl.send(Packet)` |
 
 ## Die Render-Schicht
 
@@ -94,10 +94,33 @@ Für die Schlösser im Inventar gibt es kein `drawSlot` mehr. Ersatz:
 anhängen und über `menu.slots` selbst zeichnen — `Slot.x`/`Slot.y` liefern
 weiterhin die Position.
 
-Offen zu prüfen: die Fabric-HUD-API für 26.x (`HudElementRegistry`).
+Die Fabric-HUD-API (`HudElementRegistry`, `VanillaHudElements`) gibt es in 26.x unverändert.
 
-## Reihenfolge
+## Gelöst: der Namensraum-Konflikt im Entwicklungs-Client
 
-1. Schutzlogik: Mixins, Guards, Config, Befehle, Tasten
-2. Oberfläche: vier Bildschirme, HUD- und Inventar-Schlösser
-3. Bauen, im Dev-Client prüfen, veröffentlichen — erst 26.2, dann 26.1
+Der Dev-Client brach lange ab mit:
+
+`Namespace (named) does not match current runtime namespace (official)`
+
+Ursache war **nicht** die Mapping-Datei, sondern: Loom schreibt jede eingebundene Mod auf `named` um — einen Namensraum, den es ab 26.x nicht mehr gibt, weil das Spiel unverschleiert ausgeliefert wird. Der Loader läuft dort auf `official`.
+
+**Lösung:** Fabric API und Mod Menu nur mit `modCompileOnly` einbinden; zur Laufzeit die unveränderte Jar aus `run/mods` verwenden, die bereits in `official` vorliegt.
+
+Mod Menu war dabei der zähste Teil — es bringt fünf Fabric-Module als eingebettete Jars mit, die über denselben Weg umgeschrieben wurden. Deshalb tauchte nach jedem Versuch ein anderes Modul in der Fehlermeldung auf.
+
+Erfolglos vorher versucht: die Mapping-Datei mit allen 10.953 Klassen füllen, auf vier Module abspecken, `fabric.development` erzwingen. Keiner dieser Wege veränderte den Namensraum.
+
+## Stolperfalle: keine Item-Stapel außerhalb einer Welt
+
+`new ItemStack(item)` wirft ab 26.x im Hauptmenü `NullPointerException: Components not bound yet`. Die Item- und Block-Auswahl bauten für jeden Eintrag einen Stapel — betroffen war jeder, der das Menü über Mod Menu öffnet. Die Listen arbeiten deshalb jetzt mit Registry-IDs; Name aus dem Übersetzungsschlüssel, Symbol nur wenn ein Stapel möglich ist.
+
+## Stand
+
+Beide Fassungen sind veröffentlicht: **2.0.0 für 26.1**, **2.0.1 für 26.2**.
+Im Dev-Client geprüft — die Mod lädt, alle sieben Einhängepunkte greifen,
+alle vier Bildschirme rendern, und eine Welt-Sitzung lief ohne einen
+Fehler aus dem Mod-Code.
+
+26.1 und 26.2 unterscheiden sich in genau einer Zeile: Der Text über der
+Hotbar läuft in 26.1 über `Gui`, in 26.2 über `Gui.hud`. Deshalb gibt
+es je Version einen eigenen Zweig.
