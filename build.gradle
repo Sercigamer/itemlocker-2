@@ -32,7 +32,11 @@ loom {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
+	// Ab 26.x liefert Mojang das Spiel unverschleiert aus, es gibt also nichts
+	// zu uebersetzen. Fabric veroeffentlicht dafuer nur eine leere Huelle, die
+	// sich selbst als Version 0.0.0 deklariert - ueber Maven ist sie deshalb
+	// nicht aufloesbar. Daher liegt sie als Datei im Projekt.
+	mappings files("gradle/mappings/identity-${project.minecraft_version}.jar")
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
