@@ -8,22 +8,22 @@ import com.itemlocker.config.ConfigManager;
 import com.itemlocker.lock.DropGuard;
 import com.itemlocker.lock.LockManager;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.CyclingButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 /**
  * Item-Auswahl: durchsuchbare Liste aller Items, Klick auf eine Zeile sperrt
@@ -31,18 +31,18 @@ import net.minecraft.util.Formatting;
  */
 public class ItemLockScreen extends Screen {
 	private static final int LIST_TOP = 58;
-	/** Platz unten fuer Zaehler-Text und die beiden Button-Reihen. */
+	/** Platz unten fuer Zaehler-Component und die beiden Button-Reihen. */
 	private static final int LIST_BOTTOM_MARGIN = 78;
 	private static final int ROW_HEIGHT = 26;
 
 	private final Screen parent;
 
-	private TextFieldWidget searchField;
+	private EditBox searchField;
 	private ItemListWidget itemList;
 	private Filter filter = Filter.ALL;
 
 	public ItemLockScreen(Screen parent) {
-		super(Text.translatable("itemlocker.config.items.title"));
+		super(Component.translatable("itemlocker.config.items.title"));
 		this.parent = parent;
 	}
 
@@ -58,8 +58,8 @@ public class ItemLockScreen extends Screen {
 			this.translationKey = translationKey;
 		}
 
-		public Text label() {
-			return Text.translatable(translationKey);
+		public Component label() {
+			return Component.translatable(translationKey);
 		}
 	}
 
@@ -67,52 +67,52 @@ public class ItemLockScreen extends Screen {
 	protected void init() {
 		int centerX = this.width / 2;
 
-		this.searchField = new TextFieldWidget(this.textRenderer, centerX - 155, 30, 200, 20,
-				Text.translatable("itemlocker.config.items.search"));
-		this.searchField.setPlaceholder(
-				Text.translatable("itemlocker.config.items.search").formatted(Formatting.DARK_GRAY));
-		this.searchField.setChangedListener(text -> refreshList());
-		addDrawableChild(this.searchField);
+		this.searchField = new EditBox(this.font, centerX - 155, 30, 200, 20,
+				Component.translatable("itemlocker.config.items.search"));
+		this.searchField.setHint(
+				Component.translatable("itemlocker.config.items.search").withStyle(ChatFormatting.DARK_GRAY));
+		this.searchField.setResponder(text -> refreshList());
+		addRenderableWidget(this.searchField);
 
-		addDrawableChild(CyclingButtonWidget.<Filter>builder(Filter::label, this.filter)
-				.values(Filter.values())
-				.omitKeyText()
-				.build(centerX + 50, 30, 105, 20, Text.empty(), (button, value) -> {
+		addRenderableWidget(CycleButton.<Filter>builder(Filter::label, this.filter)
+				.withValues(Filter.values())
+				.displayOnlyValue()
+				.build(centerX + 50, 30, 105, 20, Component.empty(), (button, value) -> {
 					this.filter = value;
 					refreshList();
 				}));
 
-		this.itemList = new ItemListWidget(this.client, this.width,
+		this.itemList = new ItemListWidget(this.minecraft, this.width,
 				this.height - LIST_TOP - LIST_BOTTOM_MARGIN, LIST_TOP, ROW_HEIGHT);
-		addDrawableChild(this.itemList);
+		addRenderableWidget(this.itemList);
 
-		addDrawableChild(ButtonWidget
-				.builder(Text.translatable("itemlocker.config.items.clear"), button -> {
+		addRenderableWidget(Button
+				.builder(Component.translatable("itemlocker.config.items.clear"), button -> {
 					ConfigManager.get().lockedItems.clear();
 					ConfigManager.save();
 					DropGuard.resetCounter();
 					refreshList();
 				})
-				.dimensions(centerX - 155, this.height - 56, 150, 20).build());
+				.bounds(centerX - 155, this.height - 56, 150, 20).build());
 
-		addDrawableChild(ButtonWidget
-				.builder(Text.translatable("itemlocker.config.items.lock_held"), button -> lockHeldItem())
-				.dimensions(centerX + 5, this.height - 56, 150, 20).build());
+		addRenderableWidget(Button
+				.builder(Component.translatable("itemlocker.config.items.lock_held"), button -> lockHeldItem())
+				.bounds(centerX + 5, this.height - 56, 150, 20).build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> this.close())
-				.dimensions(centerX - 100, this.height - 30, 200, 20).build());
+		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> this.close())
+				.bounds(centerX - 100, this.height - 30, 200, 20).build());
 
 		refreshList();
 	}
 
 	private void lockHeldItem() {
-		ClientPlayerEntity player = this.client == null ? null : this.client.player;
+		LocalPlayer player = this.minecraft == null ? null : this.minecraft.player;
 
 		if (player == null) {
 			return;
 		}
 
-		ItemStack stack = player.getInventory().getSelectedStack();
+		ItemStack stack = player.getInventory().getSelectedItem();
 
 		if (stack.isEmpty()) {
 			return;
@@ -128,7 +128,7 @@ public class ItemLockScreen extends Screen {
 			return;
 		}
 
-		String query = this.searchField == null ? "" : this.searchField.getText().trim().toLowerCase(Locale.ROOT);
+		String query = this.searchField == null ? "" : this.searchField.getValue().trim().toLowerCase(Locale.ROOT);
 		List<ItemEntry> entries = new ArrayList<>();
 
 		for (Item item : candidates()) {
@@ -138,7 +138,7 @@ public class ItemLockScreen extends Screen {
 
 			ItemStack stack = new ItemStack(item);
 			String id = LockManager.itemId(stack);
-			String name = stack.getName().getString();
+			String name = stack.getHoverName().getString();
 
 			if (!query.isEmpty()
 					&& !id.toLowerCase(Locale.ROOT).contains(query)
@@ -171,20 +171,20 @@ public class ItemLockScreen extends Screen {
 	/** Grundmenge je nach Filter: alle Items oder nur die im Inventar. */
 	private Iterable<Item> candidates() {
 		if (filter != Filter.INVENTORY) {
-			return Registries.ITEM;
+			return BuiltInRegistries.ITEM;
 		}
 
-		ClientPlayerEntity player = this.client == null ? null : this.client.player;
+		LocalPlayer player = this.minecraft == null ? null : this.minecraft.player;
 
 		if (player == null) {
 			return List.of();
 		}
 
-		PlayerInventory inventory = player.getInventory();
+		Inventory inventory = player.getInventory();
 		List<Item> items = new ArrayList<>();
 
 		for (int slot = 0; slot < inventory.size(); slot++) {
-			ItemStack stack = inventory.getStack(slot);
+			ItemStack stack = inventory.getItem(slot);
 
 			if (!stack.isEmpty() && !items.contains(stack.getItem())) {
 				items.add(stack.getItem());
@@ -195,25 +195,25 @@ public class ItemLockScreen extends Screen {
 	}
 
 	@Override
-	public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+	public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
 		super.render(context, mouseX, mouseY, deltaTicks);
 
-		context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 14, 0xFFFFFFFF);
+		context.drawCenteredTextWithShadow(this.font, this.title, this.width / 2, 14, 0xFFFFFFFF);
 
-		Text count = Text.translatable("itemlocker.config.items.count", ConfigManager.get().lockedItems.size())
-				.formatted(Formatting.GRAY);
-		context.drawCenteredTextWithShadow(this.textRenderer, count, this.width / 2, this.height - 68, 0xFFAAAAAA);
+		Component count = Component.translatable("itemlocker.config.items.count", ConfigManager.get().lockedItems.size())
+				.withStyle(ChatFormatting.GRAY);
+		context.drawCenteredTextWithShadow(this.font, count, this.width / 2, this.height - 68, 0xFFAAAAAA);
 	}
 
 	@Override
 	public void close() {
 		ConfigManager.save();
-		this.client.setScreen(this.parent);
+		this.minecraft.setScreen(this.parent);
 	}
 
 	/** Scrollbare Liste der Items. */
-	private class ItemListWidget extends AlwaysSelectedEntryListWidget<ItemEntry> {
-		ItemListWidget(MinecraftClient client, int width, int height, int y, int itemHeight) {
+	private class ItemListWidget extends ObjectSelectionList<ItemEntry> {
+		ItemListWidget(Minecraft client, int width, int height, int y, int itemHeight) {
 			super(client, width, height, y, itemHeight);
 		}
 
@@ -224,7 +224,7 @@ public class ItemLockScreen extends Screen {
 	}
 
 	/** Eine Zeile: Icon, Name, Registry-ID und Schloss-Status. */
-	private class ItemEntry extends AlwaysSelectedEntryListWidget.Entry<ItemEntry> {
+	private class ItemEntry extends ObjectSelectionList.Entry<ItemEntry> {
 		private final ItemStack stack;
 		private final String id;
 		private final String name;
@@ -236,45 +236,45 @@ public class ItemLockScreen extends Screen {
 		}
 
 		@Override
-		public Text getNarration() {
-			return Text.literal(name);
+		public Component getNarration() {
+			return Component.literal(name);
 		}
 
 		@Override
-		public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 			int x = getContentX();
 			int y = getContentY();
 			int width = getContentWidth();
 			boolean locked = LockManager.isItemLocked(stack);
 
 			if (locked) {
-				context.fill(x, y, x + width, y + getContentHeight() - 2, 0x40FF5555);
+				extractor.fill(x, y, x + width, y + getContentHeight() - 2, 0x40FF5555);
 			} else if (hovered) {
-				context.fill(x, y, x + width, y + getContentHeight() - 2, 0x30FFFFFF);
+				extractor.fill(x, y, x + width, y + getContentHeight() - 2, 0x30FFFFFF);
 			}
 
-			context.drawItem(stack, x + 4, y + 3);
+			context.item(stack, x + 4, y + 3);
 
-			context.drawTextWithShadow(ItemLockScreen.this.textRenderer,
-					Text.literal(name).formatted(locked ? Formatting.RED : Formatting.WHITE),
+			context.drawTextWithShadow(ItemLockScreen.this.font,
+					Component.literal(name).withStyle(locked ? ChatFormatting.RED : ChatFormatting.WHITE),
 					x + 26, y + 2, 0xFFFFFFFF);
 
-			context.drawTextWithShadow(ItemLockScreen.this.textRenderer,
-					Text.literal(id).formatted(Formatting.DARK_GRAY),
+			context.drawTextWithShadow(ItemLockScreen.this.font,
+					Component.literal(id).withStyle(ChatFormatting.DARK_GRAY),
 					x + 26, y + 13, 0xFF555555);
 
-			Text state = Text.translatable(locked
+			Component state = Component.translatable(locked
 					? "itemlocker.config.items.state_locked"
 					: "itemlocker.config.items.state_open")
-					.formatted(locked ? Formatting.RED : Formatting.DARK_GRAY);
+					.withStyle(locked ? ChatFormatting.RED : ChatFormatting.DARK_GRAY);
 
-			int stateWidth = ItemLockScreen.this.textRenderer.getWidth(state);
-			context.drawTextWithShadow(ItemLockScreen.this.textRenderer, state,
+			int stateWidth = ItemLockScreen.this.font.width(state);
+			context.drawTextWithShadow(ItemLockScreen.this.font, state,
 					x + width - stateWidth - 6, y + 8, 0xFFFFFFFF);
 		}
 
 		@Override
-		public boolean mouseClicked(Click click, boolean doubled) {
+		public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
 			LockManager.toggleItem(id);
 			DropGuard.resetCounter();
 			return true;

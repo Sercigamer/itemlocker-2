@@ -2,13 +2,13 @@ package com.itemlocker.client.screen;
 
 import java.util.function.IntConsumer;
 
-import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.network.chat.Component;
 
 /**
  * Schieberegler fuer ganze Zahlen - Vanilla liefert nur die 0..1-Variante.
  */
-public class IntSliderWidget extends SliderWidget {
+public class IntSliderWidget extends AbstractSliderButton {
 	private String translationKey;
 	private int min;
 	private int max;
@@ -16,7 +16,7 @@ public class IntSliderWidget extends SliderWidget {
 
 	public IntSliderWidget(int x, int y, int width, int height, String translationKey, int min, int max, int current,
 			IntConsumer setter) {
-		super(x, y, width, height, Text.empty(), toSliderValue(current, min, max));
+		super(x, y, width, height, Component.empty(), toSliderValue(current, min, max));
 
 		this.translationKey = translationKey;
 		this.min = min;
@@ -47,7 +47,7 @@ public class IntSliderWidget extends SliderWidget {
 			return;
 		}
 
-		setMessage(Text.translatable(translationKey, getIntValue()));
+		setMessage(Component.translatable(translationKey, getIntValue()));
 	}
 
 	@Override

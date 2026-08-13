@@ -3,13 +3,13 @@ package com.itemlocker.lock;
 import com.itemlocker.config.ConfigManager;
 import com.itemlocker.config.LockerConfig;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 /**
  * Rueckmeldung an den Spieler: Text ueber der Hotbar und ein kurzer Sound.
@@ -20,19 +20,19 @@ public final class Feedback {
 
 	public static void dropBlocked(ItemStack stack, int remaining, int required) {
 		LockerConfig config = ConfigManager.get();
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 
 		if (player == null) {
 			return;
 		}
 
 		if (config.actionBarMessages) {
-			player.sendMessage(Text.translatable(
+			player.displayClientMessage(Component.translatable(
 					"itemlocker.message.blocked",
-					stack.getName().copy().formatted(Formatting.WHITE),
-					Text.literal(String.valueOf(remaining)).formatted(Formatting.YELLOW),
-					Text.literal(String.valueOf(required)).formatted(Formatting.GRAY))
-					.formatted(Formatting.RED), true);
+					stack.getHoverName().copy().withStyle(ChatFormatting.WHITE),
+					Component.literal(String.valueOf(remaining)).withStyle(ChatFormatting.YELLOW),
+					Component.literal(String.valueOf(required)).withStyle(ChatFormatting.GRAY))
+					.withStyle(ChatFormatting.RED), true);
 		}
 
 		if (config.playSound) {
@@ -42,17 +42,17 @@ public final class Feedback {
 
 	public static void dropAllowed(ItemStack stack) {
 		LockerConfig config = ConfigManager.get();
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 
 		if (player == null) {
 			return;
 		}
 
 		if (config.actionBarMessages) {
-			player.sendMessage(Text.translatable(
+			player.displayClientMessage(Component.translatable(
 					"itemlocker.message.released",
-					stack.getName().copy().formatted(Formatting.WHITE))
-					.formatted(Formatting.GREEN), true);
+					stack.getHoverName().copy().withStyle(ChatFormatting.WHITE))
+					.withStyle(ChatFormatting.GREEN), true);
 		}
 
 		if (config.playSound) {
@@ -62,15 +62,15 @@ public final class Feedback {
 
 	public static void armorStandBlocked(ItemStack stack) {
 		LockerConfig config = ConfigManager.get();
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 
 		if (player == null) {
 			return;
 		}
 
 		if (config.actionBarMessages) {
-			player.sendMessage(Text.translatable("itemlocker.message.armor_stand",
-					stack.getName().copy().formatted(Formatting.WHITE)).formatted(Formatting.RED), true);
+			player.displayClientMessage(Component.translatable("itemlocker.message.armor_stand",
+					stack.getHoverName().copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.RED), true);
 		}
 
 		if (config.playSound) {
@@ -79,31 +79,31 @@ public final class Feedback {
 	}
 
 	public static void potBlocked(ItemStack stack) {
-		warn(Text.translatable("itemlocker.message.pot",
-				stack.getName().copy().formatted(Formatting.WHITE)));
+		warn(Component.translatable("itemlocker.message.pot",
+				stack.getHoverName().copy().withStyle(ChatFormatting.WHITE)));
 	}
 
-	public static void blockGuiBlocked(Text blockName, boolean sneakBypass) {
-		warn(Text.translatable(sneakBypass
+	public static void blockGuiBlocked(Component blockName, boolean sneakBypass) {
+		warn(Component.translatable(sneakBypass
 				? "itemlocker.message.block_gui_sneak"
 				: "itemlocker.message.block_gui",
-				blockName.copy().formatted(Formatting.WHITE)));
+				blockName.copy().withStyle(ChatFormatting.WHITE)));
 	}
 
 	public static void offhandBlocked() {
-		warn(Text.translatable("itemlocker.message.offhand"));
+		warn(Component.translatable("itemlocker.message.offhand"));
 	}
 
-	private static void warn(Text message) {
+	private static void warn(Component message) {
 		LockerConfig config = ConfigManager.get();
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 
 		if (player == null) {
 			return;
 		}
 
 		if (config.actionBarMessages) {
-			player.sendMessage(message.copy().formatted(Formatting.RED), true);
+			player.displayClientMessage(message.copy().withStyle(ChatFormatting.RED), true);
 		}
 
 		if (config.playSound) {
@@ -113,15 +113,15 @@ public final class Feedback {
 
 	public static void slotFrozen(int hotbarSlot) {
 		LockerConfig config = ConfigManager.get();
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 
 		if (player == null) {
 			return;
 		}
 
 		if (config.actionBarMessages) {
-			player.sendMessage(Text.translatable("itemlocker.message.frozen", hotbarSlot + 1)
-					.formatted(Formatting.RED), true);
+			player.displayClientMessage(Component.translatable("itemlocker.message.frozen", hotbarSlot + 1)
+					.withStyle(ChatFormatting.RED), true);
 		}
 
 		if (config.playSound) {
@@ -129,17 +129,17 @@ public final class Feedback {
 		}
 	}
 
-	public static void info(Text text) {
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+	public static void info(Component text) {
+		LocalPlayer player = Minecraft.getInstance().player;
 
 		if (player != null) {
-			player.sendMessage(text, false);
+			player.displayClientMessage(text, false);
 		}
 	}
 
 	private static void playSound(float pitch) {
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 		client.getSoundManager().play(
-				PositionedSoundInstance.ui(SoundEvents.BLOCK_NOTE_BLOCK_HAT, Math.min(2.0F, Math.max(0.5F, pitch))));
+				SimpleSoundInstance.ui(SoundEvents.BLOCK_NOTE_BLOCK_HAT, Math.min(2.0F, Math.max(0.5F, pitch))));
 	}
 }

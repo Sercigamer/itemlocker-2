@@ -7,10 +7,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.itemlocker.lock.DropGuard;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.ContainerInput;
 
 /**
  * Faengt Drops im Kreativ-Inventar ab, bevor der Bildschirm den Slot anfasst.
@@ -20,12 +20,12 @@ import net.minecraft.screen.slot.SlotActionType;
  * laesst das Item aber aus dem Inventar verschwinden - deshalb sitzt der Haken
  * ganz am Anfang.
  */
-@Mixin(CreativeInventoryScreen.class)
+@Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeInventoryScreenMixin {
 	@Inject(method = "onMouseClick", at = @At("HEAD"), cancellable = true)
-	private void itemlocker$guardCreativeClick(Slot slot, int slotId, int button, SlotActionType actionType,
+	private void itemlocker$guardCreativeClick(Slot slot, int slotId, int button, ContainerInput actionType,
 			CallbackInfo ci) {
-		if (DropGuard.blockCreativeScreenClick(slot, actionType, MinecraftClient.getInstance().player)) {
+		if (DropGuard.blockCreativeScreenClick(slot, actionType, Minecraft.getInstance().player)) {
 			ci.cancel();
 		}
 	}

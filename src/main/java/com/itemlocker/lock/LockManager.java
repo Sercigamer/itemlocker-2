@@ -3,9 +3,9 @@ package com.itemlocker.lock;
 import com.itemlocker.config.ConfigManager;
 import com.itemlocker.config.LockerConfig;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 
 /**
  * Beantwortet die Frage "ist das hier gesperrt?" und verwaltet die Sperrliste.
@@ -17,7 +17,7 @@ public final class LockManager {
 	}
 
 	public static String itemId(ItemStack stack) {
-		Identifier id = Registries.ITEM.getId(stack.getItem());
+		Identifier id = BuiltInRegistries.ITEM.getKey(stack.getItem());
 		return id.toString();
 	}
 

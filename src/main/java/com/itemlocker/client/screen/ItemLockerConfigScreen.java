@@ -4,12 +4,12 @@ import com.itemlocker.config.ConfigManager;
 import com.itemlocker.config.LockerConfig;
 import com.itemlocker.lock.DropGuard;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.CyclingButtonWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 /**
  * Hauptmenue der Mod. Erreichbar ueber Mod Menu, {@code /itemlocker config}
@@ -22,7 +22,7 @@ public class ItemLockerConfigScreen extends Screen {
 	private final Screen parent;
 
 	public ItemLockerConfigScreen(Screen parent) {
-		super(Text.translatable("itemlocker.config.title"));
+		super(Component.translatable("itemlocker.config.title"));
 		this.parent = parent;
 	}
 
@@ -36,117 +36,117 @@ public class ItemLockerConfigScreen extends Screen {
 		int top = 36;
 
 		// Linke Spalte
-		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.enabled)
-				.build(leftX, top, COLUMN_WIDTH, 20, Text.translatable("itemlocker.config.enabled"),
+		addRenderableWidget(CycleButton.onOffBuilder(config.enabled)
+				.build(leftX, top, COLUMN_WIDTH, 20, Component.translatable("itemlocker.config.enabled"),
 						(button, value) -> {
 							config.enabled = value;
 							DropGuard.resetCounter();
 							ConfigManager.save();
 						}));
 
-		addDrawableChild(new IntSliderWidget(leftX, top + ROW_HEIGHT, COLUMN_WIDTH, 20,
+		addRenderableWidget(new IntSliderWidget(leftX, top + ROW_HEIGHT, COLUMN_WIDTH, 20,
 				"itemlocker.config.required_drops", 1, 64, config.requiredDrops, value -> {
 					config.requiredDrops = value;
 					DropGuard.resetCounter();
 					ConfigManager.save();
 				}));
 
-		addDrawableChild(new IntSliderWidget(leftX, top + ROW_HEIGHT * 2, COLUMN_WIDTH, 20,
+		addRenderableWidget(new IntSliderWidget(leftX, top + ROW_HEIGHT * 2, COLUMN_WIDTH, 20,
 				"itemlocker.config.timeout", 1, 60, (int) (config.resetAfterMillis / 1000L), value -> {
 					config.resetAfterMillis = value * 1000L;
 					ConfigManager.save();
 				}));
 
-		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.guardInventoryScreens)
+		addRenderableWidget(CycleButton.onOffBuilder(config.guardInventoryScreens)
 				.build(leftX, top + ROW_HEIGHT * 3, COLUMN_WIDTH, 20,
-						Text.translatable("itemlocker.config.guard_inventory"), (button, value) -> {
+						Component.translatable("itemlocker.config.guard_inventory"), (button, value) -> {
 							config.guardInventoryScreens = value;
 							ConfigManager.save();
 						}));
 
-		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.preventTakingFromLockedSlots)
+		addRenderableWidget(CycleButton.onOffBuilder(config.preventTakingFromLockedSlots)
 				.build(leftX, top + ROW_HEIGHT * 4, COLUMN_WIDTH, 20,
-						Text.translatable("itemlocker.config.freeze_slots"), (button, value) -> {
+						Component.translatable("itemlocker.config.freeze_slots"), (button, value) -> {
 							config.preventTakingFromLockedSlots = value;
 							ConfigManager.save();
 						}));
 
-		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.protectArmorStands)
+		addRenderableWidget(CycleButton.onOffBuilder(config.protectArmorStands)
 				.build(leftX, top + ROW_HEIGHT * 5, COLUMN_WIDTH, 20,
-						Text.translatable("itemlocker.config.armor_stands"), (button, value) -> {
+						Component.translatable("itemlocker.config.armor_stands"), (button, value) -> {
 							config.protectArmorStands = value;
 							ConfigManager.save();
 						}));
 
-		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.protectDecoratedPots)
+		addRenderableWidget(CycleButton.onOffBuilder(config.protectDecoratedPots)
 				.build(leftX, top + ROW_HEIGHT * 6, COLUMN_WIDTH, 20,
-						Text.translatable("itemlocker.config.pots"), (button, value) -> {
+						Component.translatable("itemlocker.config.pots"), (button, value) -> {
 							config.protectDecoratedPots = value;
 							ConfigManager.save();
 						}));
 
 		// Rechte Spalte
-		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.preventOffhandSwap)
-				.build(rightX, top, COLUMN_WIDTH, 20, Text.translatable("itemlocker.config.offhand"),
+		addRenderableWidget(CycleButton.onOffBuilder(config.preventOffhandSwap)
+				.build(rightX, top, COLUMN_WIDTH, 20, Component.translatable("itemlocker.config.offhand"),
 						(button, value) -> {
 							config.preventOffhandSwap = value;
 							ConfigManager.save();
 						}));
 
-		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.showHudIcons)
-				.build(rightX, top + ROW_HEIGHT, COLUMN_WIDTH, 20, Text.translatable("itemlocker.config.hud"),
+		addRenderableWidget(CycleButton.onOffBuilder(config.showHudIcons)
+				.build(rightX, top + ROW_HEIGHT, COLUMN_WIDTH, 20, Component.translatable("itemlocker.config.hud"),
 						(button, value) -> {
 							config.showHudIcons = value;
 							ConfigManager.save();
 						}));
 
-		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.playSound)
-				.build(rightX, top + ROW_HEIGHT * 2, COLUMN_WIDTH, 20, Text.translatable("itemlocker.config.sound"),
+		addRenderableWidget(CycleButton.onOffBuilder(config.playSound)
+				.build(rightX, top + ROW_HEIGHT * 2, COLUMN_WIDTH, 20, Component.translatable("itemlocker.config.sound"),
 						(button, value) -> {
 							config.playSound = value;
 							ConfigManager.save();
 						}));
 
-		addDrawableChild(CyclingButtonWidget.onOffBuilder(config.actionBarMessages)
+		addRenderableWidget(CycleButton.onOffBuilder(config.actionBarMessages)
 				.build(rightX, top + ROW_HEIGHT * 3, COLUMN_WIDTH, 20,
-						Text.translatable("itemlocker.config.messages"), (button, value) -> {
+						Component.translatable("itemlocker.config.messages"), (button, value) -> {
 							config.actionBarMessages = value;
 							ConfigManager.save();
 						}));
 
-		addDrawableChild(ButtonWidget
-				.builder(Text.translatable("itemlocker.config.open_slots", config.lockedSlots.size()),
-						button -> this.client.setScreen(new SlotLockScreen(this)))
-				.dimensions(rightX, top + ROW_HEIGHT * 4, COLUMN_WIDTH, 20).build());
+		addRenderableWidget(Button
+				.builder(Component.translatable("itemlocker.config.open_slots", config.lockedSlots.size()),
+						button -> this.minecraft.setScreen(new SlotLockScreen(this)))
+				.bounds(rightX, top + ROW_HEIGHT * 4, COLUMN_WIDTH, 20).build());
 
-		addDrawableChild(ButtonWidget
-				.builder(Text.translatable("itemlocker.config.open_items", config.lockedItems.size()),
-						button -> this.client.setScreen(new ItemLockScreen(this)))
-				.dimensions(rightX, top + ROW_HEIGHT * 5, COLUMN_WIDTH, 20).build());
+		addRenderableWidget(Button
+				.builder(Component.translatable("itemlocker.config.open_items", config.lockedItems.size()),
+						button -> this.minecraft.setScreen(new ItemLockScreen(this)))
+				.bounds(rightX, top + ROW_HEIGHT * 5, COLUMN_WIDTH, 20).build());
 
-		addDrawableChild(ButtonWidget
-				.builder(Text.translatable("itemlocker.config.open_blocks", config.lockedBlocks.size()),
-						button -> this.client.setScreen(new BlockLockScreen(this)))
-				.dimensions(rightX, top + ROW_HEIGHT * 6, COLUMN_WIDTH, 20).build());
+		addRenderableWidget(Button
+				.builder(Component.translatable("itemlocker.config.open_blocks", config.lockedBlocks.size()),
+						button -> this.minecraft.setScreen(new BlockLockScreen(this)))
+				.bounds(rightX, top + ROW_HEIGHT * 6, COLUMN_WIDTH, 20).build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> this.close())
-				.dimensions(centerX - 100, this.height - 30, 200, 20).build());
+		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> this.close())
+				.bounds(centerX - 100, this.height - 30, 200, 20).build());
 	}
 
 	@Override
-	public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+	public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
 		super.render(context, mouseX, mouseY, deltaTicks);
 
-		context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 14, 0xFFFFFFFF);
+		context.drawCenteredTextWithShadow(this.font, this.title, this.width / 2, 14, 0xFFFFFFFF);
 
 		LockerConfig config = ConfigManager.get();
-		Text hint = Text.translatable("itemlocker.config.hint", config.requiredDrops).formatted(Formatting.GRAY);
-		context.drawCenteredTextWithShadow(this.textRenderer, hint, this.width / 2, this.height - 44, 0xFFAAAAAA);
+		Component hint = Component.translatable("itemlocker.config.hint", config.requiredDrops).withStyle(ChatFormatting.GRAY);
+		context.drawCenteredTextWithShadow(this.font, hint, this.width / 2, this.height - 44, 0xFFAAAAAA);
 	}
 
 	@Override
 	public void close() {
 		ConfigManager.save();
-		this.client.setScreen(this.parent);
+		this.minecraft.setScreen(this.parent);
 	}
 }

@@ -7,11 +7,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.itemlocker.lock.PlacementGuard;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientCommonNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 
 /**
  * Faengt den Tausch in die Zweithand ab.
@@ -21,16 +21,16 @@ import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
  * macht allein der Server. Ein verworfenes Paket kann also keinen Desync
  * ausloesen.
  */
-@Mixin(ClientCommonNetworkHandler.class)
+@Mixin(ClientCommonPacketListenerImpl.class)
 public abstract class ClientCommonNetworkHandlerMixin {
 	@Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
 	private void itemlocker$guardOffhandSwap(Packet<?> packet, CallbackInfo ci) {
-		if (!(packet instanceof PlayerActionC2SPacket action)
-				|| action.getAction() != PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND) {
+		if (!(packet instanceof ServerboundPlayerActionPacket action)
+				|| action.getAction() != ServerboundPlayerActionPacket.Action.SWAP_ITEM_WITH_OFFHAND) {
 			return;
 		}
 
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 
 		if (player != null && PlacementGuard.blockOffhandSwap(player)) {
 			ci.cancel();

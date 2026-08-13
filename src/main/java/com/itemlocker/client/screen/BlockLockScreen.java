@@ -7,22 +7,22 @@ import java.util.Locale;
 import com.itemlocker.config.ConfigManager;
 import com.itemlocker.lock.PlacementGuard;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.CyclingButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 
 /**
  * Bloecke auswaehlen, deren Oberflaeche sich nicht per Rechtsklick oeffnen
@@ -35,12 +35,12 @@ public class BlockLockScreen extends Screen {
 
 	private final Screen parent;
 
-	private TextFieldWidget searchField;
+	private EditBox searchField;
 	private BlockListWidget blockList;
 	private Filter filter = Filter.ALL;
 
 	public BlockLockScreen(Screen parent) {
-		super(Text.translatable("itemlocker.config.blocks.title"));
+		super(Component.translatable("itemlocker.config.blocks.title"));
 		this.parent = parent;
 	}
 
@@ -55,8 +55,8 @@ public class BlockLockScreen extends Screen {
 			this.translationKey = translationKey;
 		}
 
-		public Text label() {
-			return Text.translatable(translationKey);
+		public Component label() {
+			return Component.translatable(translationKey);
 		}
 	}
 
@@ -64,53 +64,53 @@ public class BlockLockScreen extends Screen {
 	protected void init() {
 		int centerX = this.width / 2;
 
-		this.searchField = new TextFieldWidget(this.textRenderer, centerX - 155, 30, 200, 20,
-				Text.translatable("itemlocker.config.blocks.search"));
-		this.searchField.setPlaceholder(
-				Text.translatable("itemlocker.config.blocks.search").formatted(Formatting.DARK_GRAY));
-		this.searchField.setChangedListener(text -> refreshList());
-		addDrawableChild(this.searchField);
+		this.searchField = new EditBox(this.font, centerX - 155, 30, 200, 20,
+				Component.translatable("itemlocker.config.blocks.search"));
+		this.searchField.setHint(
+				Component.translatable("itemlocker.config.blocks.search").withStyle(ChatFormatting.DARK_GRAY));
+		this.searchField.setResponder(text -> refreshList());
+		addRenderableWidget(this.searchField);
 
-		addDrawableChild(CyclingButtonWidget.<Filter>builder(Filter::label, this.filter)
-				.values(Filter.values())
-				.omitKeyText()
-				.build(centerX + 50, 30, 105, 20, Text.empty(), (button, value) -> {
+		addRenderableWidget(CycleButton.<Filter>builder(Filter::label, this.filter)
+				.withValues(Filter.values())
+				.displayOnlyValue()
+				.build(centerX + 50, 30, 105, 20, Component.empty(), (button, value) -> {
 					this.filter = value;
 					refreshList();
 				}));
 
-		this.blockList = new BlockListWidget(this.client, this.width,
+		this.blockList = new BlockListWidget(this.minecraft, this.width,
 				this.height - LIST_TOP - LIST_BOTTOM_MARGIN, LIST_TOP, ROW_HEIGHT);
-		addDrawableChild(this.blockList);
+		addRenderableWidget(this.blockList);
 
-		addDrawableChild(ButtonWidget
-				.builder(Text.translatable("itemlocker.config.blocks.clear"), button -> {
+		addRenderableWidget(Button
+				.builder(Component.translatable("itemlocker.config.blocks.clear"), button -> {
 					ConfigManager.get().lockedBlocks.clear();
 					ConfigManager.save();
 					refreshList();
 				})
-				.dimensions(centerX - 155, this.height - 56, 150, 20).build());
+				.bounds(centerX - 155, this.height - 56, 150, 20).build());
 
-		addDrawableChild(ButtonWidget
-				.builder(Text.translatable("itemlocker.config.blocks.lock_looked"), button -> lockLookedAtBlock())
-				.dimensions(centerX + 5, this.height - 56, 150, 20).build());
+		addRenderableWidget(Button
+				.builder(Component.translatable("itemlocker.config.blocks.lock_looked"), button -> lockLookedAtBlock())
+				.bounds(centerX + 5, this.height - 56, 150, 20).build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> this.close())
-				.dimensions(centerX - 100, this.height - 30, 200, 20).build());
+		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> this.close())
+				.bounds(centerX - 100, this.height - 30, 200, 20).build());
 
 		refreshList();
 	}
 
 	/** Sperrt den Block, den der Spieler gerade anvisiert. */
 	private void lockLookedAtBlock() {
-		if (this.client == null || this.client.crosshairTarget == null
-				|| this.client.crosshairTarget.getType() != HitResult.Type.BLOCK
-				|| this.client.player == null) {
+		if (this.minecraft == null || this.minecraft.hitResult == null
+				|| this.minecraft.hitResult.getType() != HitResult.Type.BLOCK
+				|| this.minecraft.player == null) {
 			return;
 		}
 
-		BlockHitResult hit = (BlockHitResult) this.client.crosshairTarget;
-		Block block = this.client.player.getEntityWorld().getBlockState(hit.getBlockPos()).getBlock();
+		BlockHitResult hit = (BlockHitResult) this.minecraft.hitResult;
+		Block block = this.minecraft.player.level().getBlockState(hit.getBlockPos()).getBlock();
 
 		if (block == Blocks.AIR) {
 			return;
@@ -120,7 +120,7 @@ public class BlockLockScreen extends Screen {
 		ConfigManager.save();
 
 		if (this.searchField != null) {
-			this.searchField.setText("");
+			this.searchField.setValue("");
 		}
 
 		refreshList();
@@ -131,10 +131,10 @@ public class BlockLockScreen extends Screen {
 			return;
 		}
 
-		String query = this.searchField == null ? "" : this.searchField.getText().trim().toLowerCase(Locale.ROOT);
+		String query = this.searchField == null ? "" : this.searchField.getValue().trim().toLowerCase(Locale.ROOT);
 		List<BlockEntry> entries = new ArrayList<>();
 
-		for (Block block : Registries.BLOCK) {
+		for (Block block : BuiltInRegistries.BLOCK) {
 			if (block == Blocks.AIR) {
 				continue;
 			}
@@ -170,26 +170,26 @@ public class BlockLockScreen extends Screen {
 	}
 
 	@Override
-	public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+	public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
 		super.render(context, mouseX, mouseY, deltaTicks);
 
-		context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 14, 0xFFFFFFFF);
+		context.drawCenteredTextWithShadow(this.font, this.title, this.width / 2, 14, 0xFFFFFFFF);
 
-		Text hint = Text.translatable(ConfigManager.get().blockGuiSneakBypass
+		Component hint = Component.translatable(ConfigManager.get().blockGuiSneakBypass
 				? "itemlocker.config.blocks.count_sneak"
 				: "itemlocker.config.blocks.count", ConfigManager.get().lockedBlocks.size())
-				.formatted(Formatting.GRAY);
-		context.drawCenteredTextWithShadow(this.textRenderer, hint, this.width / 2, this.height - 68, 0xFFAAAAAA);
+				.withStyle(ChatFormatting.GRAY);
+		context.drawCenteredTextWithShadow(this.font, hint, this.width / 2, this.height - 68, 0xFFAAAAAA);
 	}
 
 	@Override
 	public void close() {
 		ConfigManager.save();
-		this.client.setScreen(this.parent);
+		this.minecraft.setScreen(this.parent);
 	}
 
-	private class BlockListWidget extends AlwaysSelectedEntryListWidget<BlockEntry> {
-		BlockListWidget(MinecraftClient client, int width, int height, int y, int itemHeight) {
+	private class BlockListWidget extends ObjectSelectionList<BlockEntry> {
+		BlockListWidget(Minecraft client, int width, int height, int y, int itemHeight) {
 			super(client, width, height, y, itemHeight);
 		}
 
@@ -199,7 +199,7 @@ public class BlockLockScreen extends Screen {
 		}
 	}
 
-	private class BlockEntry extends AlwaysSelectedEntryListWidget.Entry<BlockEntry> {
+	private class BlockEntry extends ObjectSelectionList.Entry<BlockEntry> {
 		private final Block block;
 		private final String id;
 		private final String name;
@@ -213,47 +213,47 @@ public class BlockLockScreen extends Screen {
 		}
 
 		@Override
-		public Text getNarration() {
-			return Text.literal(name);
+		public Component getNarration() {
+			return Component.literal(name);
 		}
 
 		@Override
-		public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 			int x = getContentX();
 			int y = getContentY();
 			int width = getContentWidth();
 			boolean locked = PlacementGuard.isBlockLocked(block);
 
 			if (locked) {
-				context.fill(x, y, x + width, y + getContentHeight() - 2, 0x40FF5555);
+				extractor.fill(x, y, x + width, y + getContentHeight() - 2, 0x40FF5555);
 			} else if (hovered) {
-				context.fill(x, y, x + width, y + getContentHeight() - 2, 0x30FFFFFF);
+				extractor.fill(x, y, x + width, y + getContentHeight() - 2, 0x30FFFFFF);
 			}
 
 			if (!icon.isEmpty()) {
-				context.drawItem(icon, x + 4, y + 3);
+				context.item(icon, x + 4, y + 3);
 			}
 
-			context.drawTextWithShadow(BlockLockScreen.this.textRenderer,
-					Text.literal(name).formatted(locked ? Formatting.RED : Formatting.WHITE),
+			context.drawTextWithShadow(BlockLockScreen.this.font,
+					Component.literal(name).withStyle(locked ? ChatFormatting.RED : ChatFormatting.WHITE),
 					x + 26, y + 2, 0xFFFFFFFF);
 
-			context.drawTextWithShadow(BlockLockScreen.this.textRenderer,
-					Text.literal(id).formatted(Formatting.DARK_GRAY),
+			context.drawTextWithShadow(BlockLockScreen.this.font,
+					Component.literal(id).withStyle(ChatFormatting.DARK_GRAY),
 					x + 26, y + 13, 0xFF555555);
 
-			Text state = Text.translatable(locked
+			Component state = Component.translatable(locked
 					? "itemlocker.config.blocks.state_locked"
 					: "itemlocker.config.blocks.state_open")
-					.formatted(locked ? Formatting.RED : Formatting.DARK_GRAY);
+					.withStyle(locked ? ChatFormatting.RED : ChatFormatting.DARK_GRAY);
 
-			int stateWidth = BlockLockScreen.this.textRenderer.getWidth(state);
-			context.drawTextWithShadow(BlockLockScreen.this.textRenderer, state,
+			int stateWidth = BlockLockScreen.this.font.width(state);
+			context.drawTextWithShadow(BlockLockScreen.this.font, state,
 					x + width - stateWidth - 6, y + 8, 0xFFFFFFFF);
 		}
 
 		@Override
-		public boolean mouseClicked(Click click, boolean doubled) {
+		public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
 			if (PlacementGuard.isBlockLocked(block)) {
 				ConfigManager.get().lockedBlocks.remove(id);
 			} else {

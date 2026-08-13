@@ -3,13 +3,13 @@ package com.itemlocker.lock;
 import com.itemlocker.config.ConfigManager;
 import com.itemlocker.config.LockerConfig;
 
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.ContainerInput;
 
 /**
  * Die eigentliche Entscheidung: darf dieser Drop durch oder nicht?
@@ -34,16 +34,16 @@ public final class DropGuard {
 	 *
 	 * @return {@code true}, wenn der Drop geschluckt werden soll.
 	 */
-	public static boolean blockHotbarDrop(ClientPlayerEntity player) {
+	public static boolean blockHotbarDrop(LocalPlayer player) {
 		LockerConfig config = ConfigManager.get();
 
 		if (!config.enabled || player == null) {
 			return false;
 		}
 
-		PlayerInventory inventory = player.getInventory();
+		Inventory inventory = player.getInventory();
 
-		return blockDrop(CONTEXT_HOTBAR, inventory.getSelectedSlot(), inventory.getSelectedStack());
+		return blockDrop(CONTEXT_HOTBAR, inventory.getSelectedSlot(), inventory.getSelectedItem());
 	}
 
 	/**
@@ -51,32 +51,32 @@ public final class DropGuard {
 	 *
 	 * @return {@code true}, wenn der Klick verworfen werden soll.
 	 */
-	public static boolean blockSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player) {
+	public static boolean blockSlotClick(int slotId, int button, ContainerInput actionType, Player player) {
 		LockerConfig config = ConfigManager.get();
 
 		if (!config.enabled || !config.guardInventoryScreens || player == null) {
 			return false;
 		}
 
-		ScreenHandler handler = player.currentScreenHandler;
+		AbstractContainerMenu handler = player.containerMenu;
 
 		if (handler == null) {
 			return false;
 		}
 
 		// Stack am Cursor ausserhalb des Fensters fallen lassen.
-		if (slotId == ScreenHandler.EMPTY_SPACE_SLOT_INDEX
-				&& (actionType == SlotActionType.PICKUP || actionType == SlotActionType.THROW)) {
-			return blockDrop(CONTEXT_CURSOR, -1, handler.getCursorStack());
+		if (slotId == AbstractContainerMenu.EMPTY_SPACE_SLOT_INDEX
+				&& (actionType == ContainerInput.PICKUP || actionType == ContainerInput.THROW)) {
+			return blockDrop(CONTEXT_CURSOR, -1, handler.getCarried());
 		}
 
 		// Zahlentaste: der gesperrte Hotbar-Slot steckt in button, nicht in
 		// slotId - der zeigt auf den Slot unter dem Mauszeiger.
 		// Einen leeren gesperrten Slot darf man befuellen, nur leeren nicht.
-		if (actionType == SlotActionType.SWAP
+		if (actionType == ContainerInput.SWAP
 				&& config.preventTakingFromLockedSlots
 				&& LockManager.isSlotLocked(button)
-				&& !player.getInventory().getStack(button).isEmpty()) {
+				&& !player.getInventory().getItem(button).isEmpty()) {
 			Feedback.slotFrozen(button);
 			return true;
 		}
@@ -86,7 +86,7 @@ public final class DropGuard {
 		}
 
 		Slot slot = handler.getSlot(slotId);
-		ItemStack stack = slot.getStack();
+		ItemStack stack = slot.getItem();
 
 		if (stack.isEmpty()) {
 			return false;
@@ -95,15 +95,15 @@ public final class DropGuard {
 		int hotbarSlot = hotbarIndexOf(slot, player);
 
 		// Q auf einen Slot im offenen Inventar.
-		if (actionType == SlotActionType.THROW) {
+		if (actionType == ContainerInput.THROW) {
 			return blockDrop(CONTEXT_SCREEN, hotbarSlot, stack);
 		}
 
 		// Der zweite Weg in die Zweithand: Zweithand-Taste im offenen Inventar.
-		if (actionType == SlotActionType.SWAP
-				&& button == PlayerInventory.OFF_HAND_SLOT
+		if (actionType == ContainerInput.SWAP
+				&& button == Inventory.OFF_HAND_SLOT
 				&& config.preventOffhandSwap
-				&& (LockManager.isItemLocked(stack) || LockManager.isItemLocked(player.getOffHandStack()))) {
+				&& (LockManager.isItemLocked(stack) || LockManager.isItemLocked(player.getOffhandItem()))) {
 			Feedback.offhandBlocked();
 			return true;
 		}
@@ -132,7 +132,7 @@ public final class DropGuard {
 	 * <p>Welcher Hotbar-Slot dahintersteckt, laesst sich hier nicht zuordnen -
 	 * es greift also nur die Item-Sperre.
 	 */
-	public static boolean blockCreativeScreenClick(Slot slot, SlotActionType actionType, PlayerEntity player) {
+	public static boolean blockCreativeScreenClick(Slot slot, ContainerInput actionType, Player player) {
 		LockerConfig config = ConfigManager.get();
 
 		if (!config.enabled || !config.guardInventoryScreens || player == null) {
@@ -141,12 +141,12 @@ public final class DropGuard {
 
 		// slot == null heisst: Klick neben das Fenster, der Stack am Cursor faellt.
 		if (slot == null) {
-			ScreenHandler handler = player.currentScreenHandler;
-			return handler != null && blockDrop(CONTEXT_CREATIVE, -1, handler.getCursorStack());
+			AbstractContainerMenu handler = player.containerMenu;
+			return handler != null && blockDrop(CONTEXT_CREATIVE, -1, handler.getCarried());
 		}
 
-		if (actionType == SlotActionType.THROW) {
-			return blockDrop(CONTEXT_CREATIVE, -1, slot.getStack());
+		if (actionType == ContainerInput.THROW) {
+			return blockDrop(CONTEXT_CREATIVE, -1, slot.getItem());
 		}
 
 		return false;
@@ -190,21 +190,21 @@ public final class DropGuard {
 		return context + '#' + hotbarSlot + '#' + LockManager.itemId(stack);
 	}
 
-	private static int hotbarIndexOf(Slot slot, PlayerEntity player) {
-		PlayerInventory inventory = player.getInventory();
+	private static int hotbarIndexOf(Slot slot, Player player) {
+		Inventory inventory = player.getInventory();
 
 		// Normalfall: der Slot zeigt direkt auf das Spieler-Inventar.
-		if (slot.inventory == inventory && LockManager.isValidHotbarSlot(slot.getIndex())) {
-			return slot.getIndex();
+		if (slot.container == inventory && LockManager.isValidHotbarSlot(slot.getContainerSlot())) {
+			return slot.getContainerSlot();
 		}
 
 		// Manche Screens (z.B. das Kreativ-Inventar) schieben eigene Slot-Typen
 		// dazwischen. Dann hilft die Objektidentitaet des Stacks weiter.
-		ItemStack stack = slot.getStack();
+		ItemStack stack = slot.getItem();
 
 		if (!stack.isEmpty()) {
 			for (int index = 0; index < LockManager.HOTBAR_SIZE; index++) {
-				if (inventory.getStack(index) == stack) {
+				if (inventory.getItem(index) == stack) {
 					return index;
 				}
 			}
@@ -213,10 +213,10 @@ public final class DropGuard {
 		return -1;
 	}
 
-	private static boolean isTakeAction(SlotActionType actionType) {
-		return actionType == SlotActionType.PICKUP
-				|| actionType == SlotActionType.QUICK_MOVE
-				|| actionType == SlotActionType.SWAP
-				|| actionType == SlotActionType.PICKUP_ALL;
+	private static boolean isTakeAction(ContainerInput actionType) {
+		return actionType == ContainerInput.PICKUP
+				|| actionType == ContainerInput.QUICK_MOVE
+				|| actionType == ContainerInput.SWAP
+				|| actionType == ContainerInput.PICKUP_ALL;
 	}
 }

@@ -10,23 +10,23 @@ import com.itemlocker.lock.Feedback;
 import com.itemlocker.lock.LockManager;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 /**
  * Tastenbelegungen. Standard: L sperrt den aktuellen Hotbar-Slot, K den
  * Item-Typ in der Hand.
  */
 public final class ItemLockerKeybinds {
-	public static KeyBinding toggleSlot;
-	public static KeyBinding toggleItem;
-	public static KeyBinding toggleMod;
-	public static KeyBinding openConfig;
+	public static KeyMapping toggleSlot;
+	public static KeyMapping toggleItem;
+	public static KeyMapping toggleMod;
+	public static KeyMapping openConfig;
 
 	/**
 	 * Ein Screen darf nicht mitten aus einem Command heraus geoeffnet werden -
@@ -43,51 +43,51 @@ public final class ItemLockerKeybinds {
 	}
 
 	public static void register() {
-		toggleSlot = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-				"key.itemlocker.toggle_slot", GLFW.GLFW_KEY_L, KeyBinding.Category.INVENTORY));
+		toggleSlot = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+				"key.itemlocker.toggle_slot", GLFW.GLFW_KEY_L, KeyMapping.Category.INVENTORY));
 
-		toggleItem = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-				"key.itemlocker.toggle_item", GLFW.GLFW_KEY_K, KeyBinding.Category.INVENTORY));
+		toggleItem = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+				"key.itemlocker.toggle_item", GLFW.GLFW_KEY_K, KeyMapping.Category.INVENTORY));
 
-		toggleMod = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-				"key.itemlocker.toggle_mod", GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.INVENTORY));
+		toggleMod = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+				"key.itemlocker.toggle_mod", GLFW.GLFW_KEY_UNKNOWN, KeyMapping.Category.INVENTORY));
 
-		openConfig = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-				"key.itemlocker.open_config", GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.INVENTORY));
+		openConfig = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+				"key.itemlocker.open_config", GLFW.GLFW_KEY_UNKNOWN, KeyMapping.Category.INVENTORY));
 
 		ClientTickEvents.END_CLIENT_TICK.register(ItemLockerKeybinds::onTick);
 	}
 
-	private static void onTick(MinecraftClient client) {
-		while (openConfig.wasPressed()) {
+	private static void onTick(Minecraft client) {
+		while (openConfig.consumeClick()) {
 			requestConfigScreen();
 		}
 
-		if (configScreenRequested && client.currentScreen == null) {
+		if (configScreenRequested && client.screen == null) {
 			configScreenRequested = false;
 			client.setScreen(new ItemLockerConfigScreen(null));
 		}
 
-		ClientPlayerEntity player = client.player;
+		LocalPlayer player = client.player;
 
 		if (player == null) {
 			return;
 		}
 
-		while (toggleSlot.wasPressed()) {
+		while (toggleSlot.consumeClick()) {
 			int slot = player.getInventory().getSelectedSlot();
 			boolean locked = LockManager.toggleSlot(slot);
 			DropGuard.resetCounter();
 
-			Feedback.info(Text.translatable(locked ? "itemlocker.message.slot_locked" : "itemlocker.message.slot_unlocked",
-					slot + 1).formatted(locked ? Formatting.RED : Formatting.GREEN));
+			Feedback.info(Component.translatable(locked ? "itemlocker.message.slot_locked" : "itemlocker.message.slot_unlocked",
+					slot + 1).withStyle(locked ? ChatFormatting.RED : ChatFormatting.GREEN));
 		}
 
-		while (toggleItem.wasPressed()) {
-			ItemStack stack = player.getInventory().getStack(player.getInventory().getSelectedSlot());
+		while (toggleItem.consumeClick()) {
+			ItemStack stack = player.getInventory().getItem(player.getInventory().getSelectedSlot());
 
 			if (stack.isEmpty()) {
-				Feedback.info(Text.translatable("itemlocker.message.no_item").formatted(Formatting.RED));
+				Feedback.info(Component.translatable("itemlocker.message.no_item").withStyle(ChatFormatting.RED));
 				continue;
 			}
 
@@ -95,19 +95,19 @@ public final class ItemLockerKeybinds {
 			boolean locked = LockManager.toggleItem(id);
 			DropGuard.resetCounter();
 
-			Feedback.info(Text.translatable(locked ? "itemlocker.message.item_locked" : "itemlocker.message.item_unlocked",
-					stack.getName().copy().formatted(Formatting.WHITE), id)
-					.formatted(locked ? Formatting.RED : Formatting.GREEN));
+			Feedback.info(Component.translatable(locked ? "itemlocker.message.item_locked" : "itemlocker.message.item_unlocked",
+					stack.getHoverName().copy().withStyle(ChatFormatting.WHITE), id)
+					.withStyle(locked ? ChatFormatting.RED : ChatFormatting.GREEN));
 		}
 
-		while (toggleMod.wasPressed()) {
+		while (toggleMod.consumeClick()) {
 			LockerConfig config = ConfigManager.get();
 			config.enabled = !config.enabled;
 			ConfigManager.save();
 			DropGuard.resetCounter();
 
-			Feedback.info(Text.translatable(config.enabled ? "itemlocker.message.enabled" : "itemlocker.message.disabled")
-					.formatted(config.enabled ? Formatting.GREEN : Formatting.GRAY));
+			Feedback.info(Component.translatable(config.enabled ? "itemlocker.message.enabled" : "itemlocker.message.disabled")
+					.withStyle(config.enabled ? ChatFormatting.GREEN : ChatFormatting.GRAY));
 		}
 	}
 }

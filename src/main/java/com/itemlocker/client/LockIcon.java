@@ -2,8 +2,8 @@ package com.itemlocker.client;
 
 import com.itemlocker.lock.LockManager;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Das kleine Schloss, das gesperrte Sachen markiert - ueber der Hotbar wie im
@@ -40,19 +40,19 @@ public final class LockIcon {
 	}
 
 	/** Zeichnet ein 8x9-Schloss mit der oberen linken Ecke bei (x, y). */
-	public static void draw(DrawContext context, int x, int y, int color) {
+	public static void draw(GuiGraphicsExtractor context, int x, int y, int color) {
 		// Umriss, damit das Schloss auch auf hellen Items lesbar bleibt.
-		context.fill(x - 1, y - 1, x + 7, y + 8, COLOR_OUTLINE);
+		extractor.fill(x - 1, y - 1, x + 7, y + 8, COLOR_OUTLINE);
 
 		// Buegel
-		context.fill(x + 1, y, x + 5, y + 1, color);
-		context.fill(x, y + 1, x + 1, y + 3, color);
-		context.fill(x + 5, y + 1, x + 6, y + 3, color);
+		extractor.fill(x + 1, y, x + 5, y + 1, color);
+		extractor.fill(x, y + 1, x + 1, y + 3, color);
+		extractor.fill(x + 5, y + 1, x + 6, y + 3, color);
 
 		// Koerper
-		context.fill(x, y + 3, x + 6, y + 7, color);
+		extractor.fill(x, y + 3, x + 6, y + 7, color);
 
 		// Schluesselloch
-		context.fill(x + 2, y + 4, x + 4, y + 6, COLOR_OUTLINE);
+		extractor.fill(x + 2, y + 4, x + 4, y + 6, COLOR_OUTLINE);
 	}
 }

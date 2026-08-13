@@ -1,7 +1,7 @@
 package com.itemlocker.client;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 import java.util.Locale;
 
@@ -19,17 +19,17 @@ import com.itemlocker.lock.PlacementGuard;
 
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.Identifier;
 
 /**
  * {@code /itemlocker} (kurz: {@code /il}) - laeuft komplett clientseitig, der
@@ -153,7 +153,7 @@ public final class ItemLockerCommands {
 				"itemlocker.help.toggle",
 				"itemlocker.help.hud",
 				"itemlocker.help.keys" }) {
-			source.sendFeedback(Text.translatable(line).formatted(Formatting.GRAY));
+			source.sendFeedback(Component.translatable(line).withStyle(ChatFormatting.GRAY));
 		}
 
 		return 1;
@@ -164,15 +164,15 @@ public final class ItemLockerCommands {
 		FabricClientCommandSource source = ctx.getSource();
 
 		source.sendFeedback(header());
-		source.sendFeedback(Text.translatable("itemlocker.command.status.enabled",
-				onOff(config.enabled)).formatted(Formatting.GRAY));
-		source.sendFeedback(Text.translatable("itemlocker.command.status.count",
-				Text.literal(String.valueOf(config.requiredDrops)).formatted(Formatting.YELLOW))
-				.formatted(Formatting.GRAY));
-		source.sendFeedback(Text.translatable("itemlocker.command.status.locked",
-				Text.literal(String.valueOf(config.lockedSlots.size())).formatted(Formatting.YELLOW),
-				Text.literal(String.valueOf(config.lockedItems.size())).formatted(Formatting.YELLOW))
-				.formatted(Formatting.GRAY));
+		source.sendFeedback(Component.translatable("itemlocker.command.status.enabled",
+				onOff(config.enabled)).withStyle(ChatFormatting.GRAY));
+		source.sendFeedback(Component.translatable("itemlocker.command.status.count",
+				Component.literal(String.valueOf(config.requiredDrops)).withStyle(ChatFormatting.YELLOW))
+				.withStyle(ChatFormatting.GRAY));
+		source.sendFeedback(Component.translatable("itemlocker.command.status.locked",
+				Component.literal(String.valueOf(config.lockedSlots.size())).withStyle(ChatFormatting.YELLOW),
+				Component.literal(String.valueOf(config.lockedItems.size())).withStyle(ChatFormatting.YELLOW))
+				.withStyle(ChatFormatting.GRAY));
 
 		return 1;
 	}
@@ -184,7 +184,7 @@ public final class ItemLockerCommands {
 		source.sendFeedback(header());
 
 		if (config.lockedSlots.isEmpty() && config.lockedItems.isEmpty()) {
-			source.sendFeedback(Text.translatable("itemlocker.command.list.empty").formatted(Formatting.GRAY));
+			source.sendFeedback(Component.translatable("itemlocker.command.list.empty").withStyle(ChatFormatting.GRAY));
 			return 1;
 		}
 
@@ -199,13 +199,13 @@ public final class ItemLockerCommands {
 				slots.append(slot + 1);
 			}
 
-			source.sendFeedback(Text.translatable("itemlocker.command.list.slots",
-					Text.literal(slots.toString()).formatted(Formatting.RED)).formatted(Formatting.GRAY));
+			source.sendFeedback(Component.translatable("itemlocker.command.list.slots",
+					Component.literal(slots.toString()).withStyle(ChatFormatting.RED)).withStyle(ChatFormatting.GRAY));
 		}
 
 		for (String item : config.lockedItems) {
-			source.sendFeedback(Text.literal(" - ").formatted(Formatting.GRAY)
-					.append(Text.literal(item).formatted(Formatting.AQUA)));
+			source.sendFeedback(Component.literal(" - ").withStyle(ChatFormatting.GRAY)
+					.append(Component.literal(item).withStyle(ChatFormatting.AQUA)));
 		}
 
 		return 1;
@@ -214,7 +214,7 @@ public final class ItemLockerCommands {
 	private static int clear(CommandContext<FabricClientCommandSource> ctx) {
 		LockManager.clearAll();
 		DropGuard.resetCounter();
-		ctx.getSource().sendFeedback(Text.translatable("itemlocker.command.cleared").formatted(Formatting.GREEN));
+		ctx.getSource().sendFeedback(Component.translatable("itemlocker.command.cleared").withStyle(ChatFormatting.GREEN));
 		return 1;
 	}
 
@@ -223,9 +223,9 @@ public final class ItemLockerCommands {
 		ConfigManager.save();
 		DropGuard.resetCounter();
 
-		ctx.getSource().sendFeedback(Text.translatable(enabled
+		ctx.getSource().sendFeedback(Component.translatable(enabled
 				? "itemlocker.message.enabled"
-				: "itemlocker.message.disabled").formatted(enabled ? Formatting.GREEN : Formatting.GRAY));
+				: "itemlocker.message.disabled").withStyle(enabled ? ChatFormatting.GREEN : ChatFormatting.GRAY));
 		return 1;
 	}
 
@@ -235,8 +235,8 @@ public final class ItemLockerCommands {
 		ConfigManager.save();
 		DropGuard.resetCounter();
 
-		ctx.getSource().sendFeedback(Text.translatable("itemlocker.command.count_set",
-				Text.literal(String.valueOf(amount)).formatted(Formatting.YELLOW)).formatted(Formatting.GREEN));
+		ctx.getSource().sendFeedback(Component.translatable("itemlocker.command.count_set",
+				Component.literal(String.valueOf(amount)).withStyle(ChatFormatting.YELLOW)).withStyle(ChatFormatting.GREEN));
 		return 1;
 	}
 
@@ -245,8 +245,8 @@ public final class ItemLockerCommands {
 		ConfigManager.get().resetAfterMillis = seconds * 1000L;
 		ConfigManager.save();
 
-		ctx.getSource().sendFeedback(Text.translatable("itemlocker.command.timeout_set",
-				Text.literal(String.valueOf(seconds)).formatted(Formatting.YELLOW)).formatted(Formatting.GREEN));
+		ctx.getSource().sendFeedback(Component.translatable("itemlocker.command.timeout_set",
+				Component.literal(String.valueOf(seconds)).withStyle(ChatFormatting.YELLOW)).withStyle(ChatFormatting.GREEN));
 		return 1;
 	}
 
@@ -262,19 +262,19 @@ public final class ItemLockerCommands {
 		}
 
 		DropGuard.resetCounter();
-		ctx.getSource().sendFeedback(Text.translatable(locked
+		ctx.getSource().sendFeedback(Component.translatable(locked
 				? "itemlocker.message.slot_locked"
 				: "itemlocker.message.slot_unlocked", slot + 1)
-				.formatted(locked ? Formatting.RED : Formatting.GREEN));
+				.withStyle(locked ? ChatFormatting.RED : ChatFormatting.GREEN));
 		return 1;
 	}
 
 	private static int toggleHeldItem(CommandContext<FabricClientCommandSource> ctx, Boolean forced) {
-		ClientPlayerEntity player = ctx.getSource().getPlayer();
-		ItemStack stack = player.getInventory().getStack(player.getInventory().getSelectedSlot());
+		LocalPlayer player = ctx.getSource().getPlayer();
+		ItemStack stack = player.getInventory().getItem(player.getInventory().getSelectedSlot());
 
 		if (stack.isEmpty()) {
-			ctx.getSource().sendError(Text.translatable("itemlocker.message.no_item"));
+			ctx.getSource().sendError(Component.translatable("itemlocker.message.no_item"));
 			return 0;
 		}
 
@@ -285,8 +285,8 @@ public final class ItemLockerCommands {
 		String raw = StringArgumentType.getString(ctx, "id").trim().toLowerCase(Locale.ROOT);
 		Identifier id = Identifier.tryParse(raw);
 
-		if (id == null || !Registries.ITEM.getIds().contains(id)) {
-			ctx.getSource().sendError(Text.translatable("itemlocker.command.unknown_item", raw));
+		if (id == null || !BuiltInRegistries.ITEM.keySet().contains(id)) {
+			ctx.getSource().sendError(Component.translatable("itemlocker.command.unknown_item", raw));
 			return 0;
 		}
 
@@ -304,28 +304,28 @@ public final class ItemLockerCommands {
 		}
 
 		DropGuard.resetCounter();
-		ctx.getSource().sendFeedback(Text.translatable(locked
+		ctx.getSource().sendFeedback(Component.translatable(locked
 				? "itemlocker.message.item_locked"
 				: "itemlocker.message.item_unlocked", itemId, itemId)
-				.formatted(locked ? Formatting.RED : Formatting.GREEN));
+				.withStyle(locked ? ChatFormatting.RED : ChatFormatting.GREEN));
 		return 1;
 	}
 
 	/** Sperrt oder entsperrt den Block, den der Spieler gerade anvisiert. */
 	private static int toggleLookedAtBlock(CommandContext<FabricClientCommandSource> ctx) {
-		MinecraftClient client = MinecraftClient.getInstance();
+		Minecraft client = Minecraft.getInstance();
 
-		if (client.crosshairTarget == null || client.crosshairTarget.getType() != HitResult.Type.BLOCK
+		if (client.hitResult == null || client.hitResult.getType() != HitResult.Type.BLOCK
 				|| client.player == null) {
-			ctx.getSource().sendError(Text.translatable("itemlocker.command.no_block"));
+			ctx.getSource().sendError(Component.translatable("itemlocker.command.no_block"));
 			return 0;
 		}
 
-		BlockHitResult hit = (BlockHitResult) client.crosshairTarget;
-		Block block = client.player.getEntityWorld().getBlockState(hit.getBlockPos()).getBlock();
+		BlockHitResult hit = (BlockHitResult) client.hitResult;
+		Block block = client.player.level().getBlockState(hit.getBlockPos()).getBlock();
 
 		if (block == Blocks.AIR) {
-			ctx.getSource().sendError(Text.translatable("itemlocker.command.no_block"));
+			ctx.getSource().sendError(Component.translatable("itemlocker.command.no_block"));
 			return 0;
 		}
 
@@ -336,15 +336,15 @@ public final class ItemLockerCommands {
 		String raw = StringArgumentType.getString(ctx, "id").trim().toLowerCase(Locale.ROOT);
 		Identifier id = Identifier.tryParse(raw);
 
-		if (id == null || !Registries.BLOCK.getIds().contains(id)) {
-			ctx.getSource().sendError(Text.translatable("itemlocker.command.unknown_block", raw));
+		if (id == null || !BuiltInRegistries.BLOCK.keySet().contains(id)) {
+			ctx.getSource().sendError(Component.translatable("itemlocker.command.unknown_block", raw));
 			return 0;
 		}
 
-		return applyBlockLock(ctx, id.toString(), Text.literal(id.toString()));
+		return applyBlockLock(ctx, id.toString(), Component.literal(id.toString()));
 	}
 
-	private static int applyBlockLock(CommandContext<FabricClientCommandSource> ctx, String blockId, Text name) {
+	private static int applyBlockLock(CommandContext<FabricClientCommandSource> ctx, String blockId, Component name) {
 		LockerConfig config = ConfigManager.get();
 		boolean locked;
 
@@ -357,10 +357,10 @@ public final class ItemLockerCommands {
 		}
 
 		ConfigManager.save();
-		ctx.getSource().sendFeedback(Text.translatable(locked
+		ctx.getSource().sendFeedback(Component.translatable(locked
 				? "itemlocker.message.block_locked"
-				: "itemlocker.message.block_unlocked", name.copy().formatted(Formatting.WHITE), blockId)
-				.formatted(locked ? Formatting.RED : Formatting.GREEN));
+				: "itemlocker.message.block_unlocked", name.copy().withStyle(ChatFormatting.WHITE), blockId)
+				.withStyle(locked ? ChatFormatting.RED : ChatFormatting.GREEN));
 		return 1;
 	}
 
@@ -368,7 +368,7 @@ public final class ItemLockerCommands {
 			CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder) {
 		String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
-		for (Identifier id : Registries.BLOCK.getIds()) {
+		for (Identifier id : BuiltInRegistries.BLOCK.keySet()) {
 			String full = id.toString();
 
 			if (full.startsWith(remaining) || id.getPath().startsWith(remaining)) {
@@ -383,7 +383,7 @@ public final class ItemLockerCommands {
 			CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder) {
 		String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
-		for (Identifier id : Registries.ITEM.getIds()) {
+		for (Identifier id : BuiltInRegistries.ITEM.keySet()) {
 			String full = id.toString();
 
 			if (full.startsWith(remaining) || id.getPath().startsWith(remaining)) {
@@ -396,16 +396,16 @@ public final class ItemLockerCommands {
 
 	private static int saveAndReport(CommandContext<FabricClientCommandSource> ctx, String key, boolean value) {
 		ConfigManager.save();
-		ctx.getSource().sendFeedback(Text.translatable(key, onOff(value)).formatted(Formatting.GREEN));
+		ctx.getSource().sendFeedback(Component.translatable(key, onOff(value)).withStyle(ChatFormatting.GREEN));
 		return 1;
 	}
 
-	private static Text onOff(boolean value) {
-		return Text.translatable(value ? "itemlocker.generic.on" : "itemlocker.generic.off")
-				.formatted(value ? Formatting.GREEN : Formatting.RED);
+	private static Component onOff(boolean value) {
+		return Component.translatable(value ? "itemlocker.generic.on" : "itemlocker.generic.off")
+				.withStyle(value ? ChatFormatting.GREEN : ChatFormatting.RED);
 	}
 
-	private static Text header() {
-		return Text.literal("ItemLocker").formatted(Formatting.GOLD, Formatting.BOLD);
+	private static Component header() {
+		return Component.literal("ItemLocker").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
 	}
 }

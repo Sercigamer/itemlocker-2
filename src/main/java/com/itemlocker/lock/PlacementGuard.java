@@ -3,21 +3,21 @@ package com.itemlocker.lock;
 import com.itemlocker.config.ConfigManager;
 import com.itemlocker.config.LockerConfig;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DecoratedPotBlock;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.DecoratedPotBlock;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 /**
  * Schuetzt gesperrte Sachen vor Wegen, auf denen sie ohne Drop verschwinden -
@@ -36,18 +36,18 @@ public final class PlacementGuard {
 	 *
 	 * @return {@code true}, wenn die Interaktion verworfen werden soll.
 	 */
-	public static boolean blockArmorStandEquip(PlayerEntity player, Entity entity, Hand hand) {
+	public static boolean blockArmorStandEquip(Player player, Entity entity, InteractionHand hand) {
 		LockerConfig config = ConfigManager.get();
 
 		if (!config.enabled || !config.protectArmorStands || player == null || hand == null) {
 			return false;
 		}
 
-		if (!(entity instanceof ArmorStandEntity)) {
+		if (!(entity instanceof ArmorStand)) {
 			return false;
 		}
 
-		ItemStack stack = player.getStackInHand(hand);
+		ItemStack stack = player.getItemInHand(hand);
 
 		// Mit leerer Hand nimmt man Sachen vom Staender ab - das bleibt erlaubt.
 		if (stack.isEmpty() || !isLocked(player, stack, hand)) {
@@ -65,14 +65,14 @@ public final class PlacementGuard {
 	 *
 	 * @return {@code true}, wenn die Interaktion verworfen werden soll.
 	 */
-	public static boolean blockBlockInteraction(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult) {
+	public static boolean blockBlockInteraction(LocalPlayer player, InteractionHand hand, BlockHitResult hitResult) {
 		LockerConfig config = ConfigManager.get();
 
 		if (!config.enabled || player == null || hand == null || hitResult == null) {
 			return false;
 		}
 
-		World world = player.getEntityWorld();
+		Level world = player.level();
 
 		if (world == null) {
 			return false;
@@ -83,7 +83,7 @@ public final class PlacementGuard {
 		Block block = state.getBlock();
 
 		if (config.protectDecoratedPots && block instanceof DecoratedPotBlock) {
-			ItemStack stack = player.getStackInHand(hand);
+			ItemStack stack = player.getItemInHand(hand);
 
 			if (!stack.isEmpty() && isLocked(player, stack, hand)) {
 				Feedback.potBlocked(stack);
@@ -110,16 +110,16 @@ public final class PlacementGuard {
 	 *
 	 * @return {@code true}, wenn der Tausch verworfen werden soll.
 	 */
-	public static boolean blockOffhandSwap(PlayerEntity player) {
+	public static boolean blockOffhandSwap(Player player) {
 		LockerConfig config = ConfigManager.get();
 
 		if (!config.enabled || !config.preventOffhandSwap || player == null) {
 			return false;
 		}
 
-		PlayerInventory inventory = player.getInventory();
-		ItemStack mainHand = inventory.getSelectedStack();
-		ItemStack offHand = player.getOffHandStack();
+		Inventory inventory = player.getInventory();
+		ItemStack mainHand = inventory.getSelectedItem();
+		ItemStack offHand = player.getOffhandItem();
 
 		// Beide Richtungen: rein wie raus.
 		boolean locked = LockManager.isItemLocked(mainHand)
@@ -141,13 +141,13 @@ public final class PlacementGuard {
 	 * Beim Rechtsklick zaehlt, was der Spieler in diesem Moment gedrueckt haelt,
 	 * und der Zustand der Figur hinkt je nach Umschalt-Einstellung hinterher.
 	 */
-	private static boolean isSneaking(ClientPlayerEntity player) {
-		if (player.isSneaking() || player.shouldCancelInteraction()) {
+	private static boolean isSneaking(LocalPlayer player) {
+		if (player.isShiftKeyDown() || player.isSecondaryUseActive()) {
 			return true;
 		}
 
-		MinecraftClient client = MinecraftClient.getInstance();
-		return client.options != null && client.options.sneakKey.isPressed();
+		Minecraft client = Minecraft.getInstance();
+		return client.options != null && client.options.sneakKey.isDown();
 	}
 
 	public static boolean isBlockLocked(Block block) {
@@ -161,16 +161,16 @@ public final class PlacementGuard {
 	}
 
 	public static String blockId(Block block) {
-		return Registries.BLOCK.getId(block).toString();
+		return BuiltInRegistries.BLOCK.getKey(block).toString();
 	}
 
-	private static boolean isLocked(PlayerEntity player, ItemStack stack, Hand hand) {
+	private static boolean isLocked(Player player, ItemStack stack, InteractionHand hand) {
 		if (LockManager.isItemLocked(stack)) {
 			return true;
 		}
 
 		// Die Slot-Sperre gilt nur fuer die Haupthand - nur die kommt aus der Hotbar.
-		return hand == Hand.MAIN_HAND
+		return hand == InteractionHand.MAIN_HAND
 				&& LockManager.isSlotLocked(player.getInventory().getSelectedSlot());
 	}
 }

@@ -4,14 +4,14 @@ import com.itemlocker.config.ConfigManager;
 import com.itemlocker.lock.DropGuard;
 import com.itemlocker.lock.LockManager;
 
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 /**
  * Hotbar-Slots per Klick sperren. Zeigt gleich mit an, was gerade drinliegt.
@@ -28,7 +28,7 @@ public class SlotLockScreen extends Screen {
 	private final Screen parent;
 
 	public SlotLockScreen(Screen parent) {
-		super(Text.translatable("itemlocker.config.slots.title"));
+		super(Component.translatable("itemlocker.config.slots.title"));
 		this.parent = parent;
 	}
 
@@ -45,40 +45,40 @@ public class SlotLockScreen extends Screen {
 	protected void init() {
 		int centerX = this.width / 2;
 
-		addDrawableChild(ButtonWidget
-				.builder(Text.translatable("itemlocker.config.slots.lock_all"), button -> {
+		addRenderableWidget(Button
+				.builder(Component.translatable("itemlocker.config.slots.lock_all"), button -> {
 					for (int slot = 0; slot < LockManager.HOTBAR_SIZE; slot++) {
 						LockManager.setSlotLocked(slot, true);
 					}
 
 					DropGuard.resetCounter();
 				})
-				.dimensions(centerX - 155, this.height - 56, 150, 20).build());
+				.bounds(centerX - 155, this.height - 56, 150, 20).build());
 
-		addDrawableChild(ButtonWidget
-				.builder(Text.translatable("itemlocker.config.slots.unlock_all"), button -> {
+		addRenderableWidget(Button
+				.builder(Component.translatable("itemlocker.config.slots.unlock_all"), button -> {
 					for (int slot = 0; slot < LockManager.HOTBAR_SIZE; slot++) {
 						LockManager.setSlotLocked(slot, false);
 					}
 
 					DropGuard.resetCounter();
 				})
-				.dimensions(centerX + 5, this.height - 56, 150, 20).build());
+				.bounds(centerX + 5, this.height - 56, 150, 20).build());
 
-		addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), button -> this.close())
-				.dimensions(centerX - 100, this.height - 30, 200, 20).build());
+		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> this.close())
+				.bounds(centerX - 100, this.height - 30, 200, 20).build());
 	}
 
 	@Override
-	public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+	public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
 		super.render(context, mouseX, mouseY, deltaTicks);
 
-		context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 20, 0xFFFFFFFF);
-		context.drawCenteredTextWithShadow(this.textRenderer,
-				Text.translatable("itemlocker.config.slots.hint").formatted(Formatting.GRAY),
+		context.drawCenteredTextWithShadow(this.font, this.title, this.width / 2, 20, 0xFFFFFFFF);
+		context.drawCenteredTextWithShadow(this.font,
+				Component.translatable("itemlocker.config.slots.hint").withStyle(ChatFormatting.GRAY),
 				this.width / 2, 36, 0xFFAAAAAA);
 
-		ClientPlayerEntity player = this.client == null ? null : this.client.player;
+		LocalPlayer player = this.minecraft == null ? null : this.minecraft.player;
 		int left = stripLeft();
 		int top = stripTop();
 
@@ -87,10 +87,10 @@ public class SlotLockScreen extends Screen {
 			boolean locked = LockManager.isSlotLocked(slot);
 			boolean hovered = mouseX >= x && mouseX < x + CELL_SIZE && mouseY >= top && mouseY < top + CELL_SIZE;
 
-			context.fill(x, top, x + CELL_SIZE, top + CELL_SIZE, locked ? COLOR_CELL_LOCKED : COLOR_CELL);
+			extractor.fill(x, top, x + CELL_SIZE, top + CELL_SIZE, locked ? COLOR_CELL_LOCKED : COLOR_CELL);
 
 			if (hovered) {
-				context.fill(x, top, x + CELL_SIZE, top + CELL_SIZE, COLOR_CELL_HOVER);
+				extractor.fill(x, top, x + CELL_SIZE, top + CELL_SIZE, COLOR_CELL_HOVER);
 			}
 
 			if (locked) {
@@ -98,29 +98,29 @@ public class SlotLockScreen extends Screen {
 			}
 
 			if (player != null) {
-				ItemStack stack = player.getInventory().getStack(slot);
+				ItemStack stack = player.getInventory().getItem(slot);
 
 				if (!stack.isEmpty()) {
-					context.drawItem(stack, x + 5, top + 5);
+					context.item(stack, x + 5, top + 5);
 				}
 			}
 
-			Text label = Text.literal(String.valueOf(slot + 1))
-					.formatted(locked ? Formatting.RED : Formatting.GRAY);
-			context.drawCenteredTextWithShadow(this.textRenderer, label, x + CELL_SIZE / 2, top + CELL_SIZE + 5,
+			Component label = Component.literal(String.valueOf(slot + 1))
+					.withStyle(locked ? ChatFormatting.RED : ChatFormatting.GRAY);
+			context.drawCenteredTextWithShadow(this.font, label, x + CELL_SIZE / 2, top + CELL_SIZE + 5,
 					0xFFFFFFFF);
 		}
 	}
 
-	private void drawBorder(DrawContext context, int x, int y, int width, int height, int color) {
-		context.fill(x, y, x + width, y + 1, color);
-		context.fill(x, y + height - 1, x + width, y + height, color);
-		context.fill(x, y, x + 1, y + height, color);
-		context.fill(x + width - 1, y, x + width, y + height, color);
+	private void drawBorder(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
+		extractor.fill(x, y, x + width, y + 1, color);
+		extractor.fill(x, y + height - 1, x + width, y + height, color);
+		extractor.fill(x, y, x + 1, y + height, color);
+		extractor.fill(x + width - 1, y, x + width, y + height, color);
 	}
 
 	@Override
-	public boolean mouseClicked(Click click, boolean doubled) {
+	public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
 		int left = stripLeft();
 		int top = stripTop();
 
@@ -142,6 +142,6 @@ public class SlotLockScreen extends Screen {
 	@Override
 	public void close() {
 		ConfigManager.save();
-		this.client.setScreen(this.parent);
+		this.minecraft.setScreen(this.parent);
 	}
 }

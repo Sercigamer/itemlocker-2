@@ -68,7 +68,7 @@ public class LockerConfig {
 	/** Warn-Sound bei blockiertem Drop. */
 	public boolean playSound = true;
 
-	/** Warn-Text ueber der Hotbar bei blockiertem Drop. */
+	/** Warn-Component ueber der Hotbar bei blockiertem Drop. */
 	public boolean actionBarMessages = true;
 
 	/** Gesperrte Hotbar-Slots, 0-8 (intern), im Spiel als 1-9 angezeigt. */

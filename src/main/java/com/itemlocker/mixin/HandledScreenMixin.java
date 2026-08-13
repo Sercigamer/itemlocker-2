@@ -9,36 +9,36 @@ import com.itemlocker.client.LockIcon;
 import com.itemlocker.config.ConfigManager;
 import com.itemlocker.lock.LockManager;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.Slot;
 
 /**
  * Zeichnet das Schloss auch im offenen Inventar auf gesperrte Slots und Items -
  * damit man dort auf einen Blick sieht, was geschuetzt ist, und nicht erst beim
  * Drop-Versuch.
  */
-@Mixin(HandledScreen.class)
+@Mixin(AbstractContainerScreen.class)
 public abstract class HandledScreenMixin {
 	// Achtung: die beiden int-Parameter sind die Mausposition, nicht die des
 	// Slots. Vanilla positioniert ueber slot.x / slot.y - hier genauso.
 	@Inject(method = "drawSlot", at = @At("TAIL"))
-	private void itemlocker$drawLockIcon(DrawContext context, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
+	private void itemlocker$drawLockIcon(GuiGraphicsExtractor context, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
 		if (!ConfigManager.get().enabled || !ConfigManager.get().showHudIcons) {
 			return;
 		}
 
-		ItemStack stack = slot.getStack();
+		ItemStack stack = slot.getItem();
 
 		if (stack.isEmpty()) {
 			return;
 		}
 
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 		int color = LockIcon.colorFor(player == null ? -1 : hotbarIndexOf(slot, player), stack);
 
 		if (color != 0) {
@@ -49,17 +49,17 @@ public abstract class HandledScreenMixin {
 	}
 
 	/** Wie in DropGuard: erst ueber den Slot-Index, sonst ueber Objektidentitaet. */
-	private static int hotbarIndexOf(Slot slot, ClientPlayerEntity player) {
-		PlayerInventory inventory = player.getInventory();
+	private static int hotbarIndexOf(Slot slot, LocalPlayer player) {
+		Inventory inventory = player.getInventory();
 
-		if (slot.inventory == inventory && LockManager.isValidHotbarSlot(slot.getIndex())) {
-			return slot.getIndex();
+		if (slot.container == inventory && LockManager.isValidHotbarSlot(slot.getContainerSlot())) {
+			return slot.getContainerSlot();
 		}
 
-		ItemStack stack = slot.getStack();
+		ItemStack stack = slot.getItem();
 
 		for (int index = 0; index < LockManager.HOTBAR_SIZE; index++) {
-			if (inventory.getStack(index) == stack) {
+			if (inventory.getItem(index) == stack) {
 				return index;
 			}
 		}
